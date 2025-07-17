@@ -12,7 +12,7 @@ export function RegisterForm() {
   const handleSubmit = async (data: Parameters<typeof onSubmit>[0]) => {
     const success = await onSubmit(data);
     if (success) {
-      router.push("/register/confirmation");
+      router.push("/dashboard");
     }
   };
 
