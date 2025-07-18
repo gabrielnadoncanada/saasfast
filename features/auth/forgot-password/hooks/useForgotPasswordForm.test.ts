@@ -3,9 +3,12 @@ import { useForgotPasswordForm } from "./useForgotPasswordForm";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { forgotPasswordAction } from "@/features/auth/forgot-password/actions/forgotPassword.action";
 
-vi.mock("@/features/auth/forgot-password/actions/forgotPassword.action", () => ({
-  forgotPasswordAction: vi.fn(),
-}));
+vi.mock(
+  "@/features/auth/forgot-password/actions/forgotPassword.action",
+  () => ({
+    forgotPasswordAction: vi.fn(),
+  })
+);
 
 describe("useForgotPasswordForm", () => {
   beforeEach(() => {

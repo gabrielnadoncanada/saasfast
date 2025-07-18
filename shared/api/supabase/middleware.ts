@@ -1,6 +1,10 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
-import { DASHBOARD_PATH, LOGIN_PATH } from "@/shared/constants/routes";
+import {
+  DASHBOARD_PATH,
+  AUTH_PATH,
+  RESET_PASSWORD_PATH,
+} from "@/shared/constants/routes";
 
 export async function updateSession(request: NextRequest) {
   let supabaseResponse = NextResponse.next({
@@ -37,10 +41,15 @@ export async function updateSession(request: NextRequest) {
   const user = await supabase.auth.getUser();
 
   if (request.nextUrl.pathname.startsWith(DASHBOARD_PATH) && user.error) {
-    return NextResponse.redirect(new URL(LOGIN_PATH, request.url));
+    return NextResponse.redirect(new URL(AUTH_PATH, request.url));
   }
 
-  if (request.nextUrl.pathname === LOGIN_PATH && !user.error) {
+  // Allow authenticated users to access reset password page
+  if (request.nextUrl.pathname === RESET_PASSWORD_PATH && !user.error) {
+    return supabaseResponse;
+  }
+
+  if (request.nextUrl.pathname.startsWith(AUTH_PATH) && !user.error) {
     return NextResponse.redirect(new URL(DASHBOARD_PATH, request.url));
   }
 

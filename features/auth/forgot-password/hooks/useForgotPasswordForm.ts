@@ -35,7 +35,7 @@ export function useForgotPasswordForm() {
       injectFieldErrors(form, res.fieldErrors);
       return false;
     }
-    
+
     setIsSuccess(true);
     return true;
   };

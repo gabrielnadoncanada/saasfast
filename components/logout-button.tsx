@@ -3,7 +3,7 @@
 import { createClient } from "@/shared/api/supabase/client";
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
-import { LOGIN_PATH } from "@/shared/constants/routes";
+import { AUTH_PATH } from "@/shared/constants/routes";
 
 export function LogoutButton() {
   const router = useRouter();
@@ -11,7 +11,7 @@ export function LogoutButton() {
   const logout = async () => {
     const supabase = await createClient();
     await supabase.auth.signOut();
-    router.push(LOGIN_PATH);
+    router.push(AUTH_PATH);
   };
 
   return <Button onClick={logout}>Logout</Button>;

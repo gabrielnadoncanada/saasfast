@@ -31,7 +31,9 @@ describe("forgotPasswordAction", () => {
   });
 
   it("retourne une erreur si l'email est invalide", async () => {
-    const result = await forgotPasswordAction(createForgotPasswordForm("invalid-email"));
+    const result = await forgotPasswordAction(
+      createForgotPasswordForm("invalid-email")
+    );
     expect(result.success).toBe(false);
     if (!result.success) {
       expect(result.error).toMatch(/validation/i);
@@ -75,7 +77,9 @@ describe("forgotPasswordAction", () => {
   });
 
   it("appelle resetPasswordForEmail avec les bons paramètres", async () => {
-    const mockResetPasswordForEmail = vi.fn().mockResolvedValue({ error: null });
+    const mockResetPasswordForEmail = vi
+      .fn()
+      .mockResolvedValue({ error: null });
     (createClient as any).mockReturnValue({
       auth: {
         resetPasswordForEmail: mockResetPasswordForEmail,

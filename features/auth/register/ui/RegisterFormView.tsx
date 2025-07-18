@@ -18,7 +18,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { LOGIN_PATH } from "@/shared/constants/routes";
+import { AUTH_PATH } from "@/shared/constants/routes";
 
 interface RegisterFormViewProps {
   form: UseFormReturn<RegisterSchema>;
@@ -105,10 +105,7 @@ export function RegisterFormView({
 
               <div className="text-center text-sm">
                 Déjà un compte ?{" "}
-                <Link
-                  href={LOGIN_PATH}
-                  className="text-primary hover:underline"
-                >
+                <Link href={AUTH_PATH} className="text-primary hover:underline">
                   Se connecter
                 </Link>
               </div>

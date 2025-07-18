@@ -14,6 +14,7 @@ export const productPath = (productId: string) =>
 export const PRODUCT_CATEGORIES_PATH = "/dashboard/products/categories";
 export const PAYMENTS_PATH = "/dashboard/payments";
 
-export const LOGIN_PATH = "/login";
-export const REGISTER_PATH = "/register";
-export const FORGOT_PASSWORD_PATH = "/forgot-password";
+export const AUTH_PATH = "/auth";
+export const REGISTER_PATH = `${AUTH_PATH}/register`;
+export const FORGOT_PASSWORD_PATH = `${AUTH_PATH}/forgot-password`;
+export const RESET_PASSWORD_PATH = `${AUTH_PATH}/reset-password`;

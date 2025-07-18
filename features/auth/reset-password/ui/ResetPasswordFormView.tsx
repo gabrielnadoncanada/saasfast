@@ -18,7 +18,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { LOGIN_PATH } from "@/shared/constants/routes";
+import { AUTH_PATH } from "@/shared/constants/routes";
 
 interface ResetPasswordFormViewProps {
   form: UseFormReturn<ResetPasswordSchema>;
@@ -75,10 +75,7 @@ export function ResetPasswordFormView({
 
               <div className="text-center text-sm">
                 Vous vous souvenez de votre mot de passe?{" "}
-                <Link
-                  href={LOGIN_PATH}
-                  className="text-primary hover:underline"
-                >
+                <Link href={AUTH_PATH} className="text-primary hover:underline">
                   Se connecter
                 </Link>
               </div>

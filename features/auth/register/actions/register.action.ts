@@ -24,7 +24,7 @@ export async function registerAction(
     password,
     options: {
       data: { full_name },
-      emailRedirectTo: `${process.env.NEXT_PUBLIC_SITE_URL}/callback`,
+      emailRedirectTo: `${process.env.NEXT_PUBLIC_SITE_URL}/auth/confirm`,
     },
   });
 
