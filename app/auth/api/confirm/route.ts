@@ -3,6 +3,7 @@ import { type NextRequest } from "next/server";
 import { createClient } from "@/shared/api/supabase/server";
 import { getStatusRedirect, getErrorRedirect } from "@/shared/lib/redirect";
 import { redirect } from "next/navigation";
+import { ensureProfileExists } from "@/features/auth/shared/lib/profile";
 
 function safeRedirectUrl(url: string) {
   return url.startsWith("/") ? url : "/";
@@ -25,7 +26,7 @@ export async function GET(request: NextRequest) {
   }
 
   const supabase = await createClient();
-  const { error } = await supabase.auth.verifyOtp({ type, token_hash });
+  const { data, error } = await supabase.auth.verifyOtp({ type, token_hash });
 
   if (error) {
     redirect(
@@ -36,6 +37,15 @@ export async function GET(request: NextRequest) {
           "Le lien est expiré ou invalide. Veuillez demander un nouvel e-mail."
       )
     );
+  }
+
+  // Créer le profil une fois que l'email est confirmé
+  if (data.user) {
+    try {
+      await ensureProfileExists(data.user);
+    } catch (e) {
+      console.error("Erreur lors de la création du profil:", e);
+    }
   }
 
   redirect(

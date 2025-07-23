@@ -7,7 +7,6 @@ import {
 import { safeParseForm } from "@/shared/lib/safeParseForm";
 import type { FormResult } from "@/shared/types/api.types";
 import { createClient } from "@/shared/api/supabase/server";
-import { prisma } from "@/shared/api/prisma";
 import { getStatusRedirect } from "@/shared/lib/redirect";
 import { redirect } from "next/navigation";
 import { AUTH_PATH } from "@/shared/constants/routes";
@@ -35,20 +34,8 @@ export async function registerAction(
     return { success: false, error: authError.message };
   }
 
-  if (authData.user) {
-    try {
-      await prisma.profile.create({
-        data: {
-          id: authData.user.id,
-          email,
-          name: full_name,
-        },
-      });
-    } catch (e: any) {
-      await supabase.auth.admin.deleteUser(authData.user.id);
-      return { success: false, error: e.message || "Erreur profile Prisma" };
-    }
-  }
+  // Le profil sera créé lors de la confirmation email
+  // Voir: /auth/api/confirm/route.ts
 
   redirect(
     getStatusRedirect(
