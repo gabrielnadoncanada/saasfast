@@ -40,15 +40,22 @@ export async function updateSession(request: NextRequest) {
 
   const user = await supabase.auth.getUser();
 
+  // Cas 1 : Dashboard privé → redirect si pas authentifié
   if (request.nextUrl.pathname.startsWith(DASHBOARD_PATH) && user.error) {
     return NextResponse.redirect(new URL(AUTH_PATH, request.url));
   }
 
-  // Allow authenticated users to access reset password page
+  // Cas 2 : Reset password → redirect vers /auth si NON authentifié
+  if (request.nextUrl.pathname === RESET_PASSWORD_PATH && user.error) {
+    return NextResponse.redirect(new URL(AUTH_PATH, request.url));
+  }
+
+  // Cas 3 : Reset password → on laisse passer si authentifié
   if (request.nextUrl.pathname === RESET_PASSWORD_PATH && !user.error) {
     return supabaseResponse;
   }
 
+  // Cas 4 : Auth (login/register) → redirect dashboard si déjà authentifié
   if (request.nextUrl.pathname.startsWith(AUTH_PATH) && !user.error) {
     return NextResponse.redirect(new URL(DASHBOARD_PATH, request.url));
   }

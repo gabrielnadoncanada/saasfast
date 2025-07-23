@@ -7,6 +7,9 @@ import {
 import { createClient } from "@/shared/api/supabase/server";
 import { FormResult } from "@/shared/types/api.types";
 import { safeParseForm } from "@/shared/lib/safeParseForm";
+import { redirect } from "next/navigation";
+import { getStatusRedirect } from "@/shared/lib/redirect";
+import { DASHBOARD_PATH } from "@/shared/constants/routes";
 
 export async function loginAction(
   formData: FormData
@@ -23,5 +26,11 @@ export async function loginAction(
     return { success: false, error: error.message ?? "Erreur inconnue" };
   }
 
-  return { success: true, data: parsed.data };
+  redirect(
+    getStatusRedirect(
+      DASHBOARD_PATH,
+      "Connexion réussie.",
+      "Vous êtes maintenant connecté."
+    )
+  );
 }

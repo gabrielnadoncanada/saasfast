@@ -1,6 +1,5 @@
 import { createClient } from "@/shared/api/supabase/server";
-import { cookies } from "next/headers";
-import { LogoutButton } from "@/components/logout-button";
+import { LogoutButton } from "@/features/auth/logout/ui/LogoutButton";
 
 export default async function DashboardPage() {
   const supabase = await createClient();

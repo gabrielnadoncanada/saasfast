@@ -5,15 +5,5 @@ import { useForgotPasswordForm } from "@/features/auth/forgot-password/hooks/use
 import { ForgotPasswordFormView } from "@/features/auth/forgot-password/ui/ForgotPasswordFormView";
 
 export function ForgotPasswordForm() {
-  const { form, onSubmit, serverError, isLoading, isSuccess } = useForgotPasswordForm();
-
-  return (
-    <ForgotPasswordFormView
-      form={form}
-      onSubmit={onSubmit}
-      serverError={serverError}
-      isLoading={isLoading}
-      isSuccess={isSuccess}
-    />
-  );
+  return <ForgotPasswordFormView {...useForgotPasswordForm()} />;
 }

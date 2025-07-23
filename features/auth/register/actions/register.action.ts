@@ -8,6 +8,9 @@ import { safeParseForm } from "@/shared/lib/safeParseForm";
 import type { FormResult } from "@/shared/types/api.types";
 import { createClient } from "@/shared/api/supabase/server";
 import { prisma } from "@/shared/api/prisma";
+import { getStatusRedirect } from "@/shared/lib/redirect";
+import { redirect } from "next/navigation";
+import { AUTH_PATH } from "@/shared/constants/routes";
 
 export async function registerAction(
   formData: FormData
@@ -24,7 +27,7 @@ export async function registerAction(
     password,
     options: {
       data: { full_name },
-      emailRedirectTo: `${process.env.NEXT_PUBLIC_SITE_URL}/auth/confirm`,
+      emailRedirectTo: `${process.env.NEXT_PUBLIC_SITE_URL}/auth/api/confirm`,
     },
   });
 
@@ -47,5 +50,11 @@ export async function registerAction(
     }
   }
 
-  return { success: true, data: parsed.data };
+  redirect(
+    getStatusRedirect(
+      AUTH_PATH,
+      "Votre compte a été créé !",
+      "Vérifiez votre e-mail pour confirmer votre inscription. Connectez-vous dès que vous avez validé votre adresse."
+    )
+  );
 }
