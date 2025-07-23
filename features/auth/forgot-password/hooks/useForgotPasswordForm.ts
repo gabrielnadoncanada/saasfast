@@ -7,9 +7,10 @@ import {
 } from "@/features/auth/shared/schema/auth.schema";
 import { forgotPasswordAction } from "@/features/auth/forgot-password/actions/forgotPassword.action";
 import { injectFieldErrors } from "@/shared/lib/injectFieldErrors";
+import { useToastError } from "@/shared/lib/hooks/useToastError";
 
 export function useForgotPasswordForm() {
-  const [serverError, setServerError] = useState<string | null>(null);
+  const { serverError, setServerError, clearServerError } = useToastError();
   const [isLoading, setIsLoading] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
 
@@ -21,7 +22,7 @@ export function useForgotPasswordForm() {
   });
 
   const onSubmit = async (data: ForgotPasswordSchema) => {
-    setServerError(null);
+    clearServerError();
     setIsLoading(true);
 
     const formData = new FormData();
@@ -40,5 +41,5 @@ export function useForgotPasswordForm() {
     return true;
   };
 
-  return { form, onSubmit, serverError, isLoading, isSuccess };
+  return { form, onSubmit, isLoading, isSuccess };
 }

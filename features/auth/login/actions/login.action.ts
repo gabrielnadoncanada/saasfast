@@ -23,7 +23,10 @@ export async function loginAction(
   const { error } = await supabase.auth.signInWithPassword({ email, password });
 
   if (error) {
-    return { success: false, error: error.message ?? "Erreur inconnue" };
+    return {
+      success: false,
+      error: error.message ?? "Erreur inconnue",
+    };
   }
 
   redirect(

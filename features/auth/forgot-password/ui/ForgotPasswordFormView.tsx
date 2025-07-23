@@ -23,7 +23,6 @@ import { AUTH_PATH } from "@/shared/constants/routes";
 interface ForgotPasswordFormViewProps {
   form: UseFormReturn<ForgotPasswordSchema>;
   onSubmit: (data: ForgotPasswordSchema) => void;
-  serverError: string | null;
   isLoading: boolean;
   isSuccess: boolean;
 }
@@ -31,7 +30,6 @@ interface ForgotPasswordFormViewProps {
 export function ForgotPasswordFormView({
   form,
   onSubmit,
-  serverError,
   isLoading,
   isSuccess,
 }: ForgotPasswordFormViewProps) {
@@ -70,11 +68,6 @@ export function ForgotPasswordFormView({
         <CardContent>
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-              {serverError && (
-                <div className="mb-2 text-sm text-destructive font-medium">
-                  {serverError}
-                </div>
-              )}
 
               <FormField
                 control={form.control}

@@ -7,9 +7,10 @@ import {
 } from "@/features/auth/shared/schema/auth.schema";
 import { resetPasswordAction } from "@/features/auth/reset-password/actions/resetPassword.action";
 import { injectFieldErrors } from "@/shared/lib/injectFieldErrors";
+import { useToastError } from "@/shared/lib/hooks/useToastError";
 
 export function useResetPasswordForm() {
-  const [serverError, setServerError] = useState<string | null>(null);
+  const { serverError, setServerError, clearServerError } = useToastError();
   const [isLoading, setIsLoading] = useState(false);
 
   const form = useForm<ResetPasswordSchema>({
@@ -20,7 +21,7 @@ export function useResetPasswordForm() {
   });
 
   const onSubmit = async (data: ResetPasswordSchema) => {
-    setServerError(null);
+    clearServerError();
     setIsLoading(true);
 
     const formData = new FormData();
@@ -37,5 +38,5 @@ export function useResetPasswordForm() {
     return true;
   };
 
-  return { form, onSubmit, serverError, isLoading };
+  return { form, onSubmit, isLoading };
 }

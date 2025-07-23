@@ -24,14 +24,12 @@ import { GitHubButton } from "./GitHubButton";
 interface LoginFormViewProps {
   form: UseFormReturn<LoginSchema>;
   onSubmit: (data: LoginSchema) => void;
-  serverError: string | null;
   isLoading: boolean;
 }
 
 export function LoginFormView({
   form,
   onSubmit,
-  serverError,
   isLoading,
 }: LoginFormViewProps) {
   return (
@@ -46,11 +44,6 @@ export function LoginFormView({
         <CardContent>
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-              {serverError && (
-                <div className="mb-2 text-sm text-destructive font-medium">
-                  {serverError}
-                </div>
-              )}
               <div className="flex flex-col gap-4">
                 <GitHubButton className="w-full" disabled={isLoading} />
               </div>

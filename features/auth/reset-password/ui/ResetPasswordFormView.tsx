@@ -23,14 +23,12 @@ import { AUTH_PATH } from "@/shared/constants/routes";
 interface ResetPasswordFormViewProps {
   form: UseFormReturn<ResetPasswordSchema>;
   onSubmit: (data: ResetPasswordSchema) => void;
-  serverError: string | null;
   isLoading: boolean;
 }
 
 export function ResetPasswordFormView({
   form,
   onSubmit,
-  serverError,
   isLoading,
 }: ResetPasswordFormViewProps) {
   return (
@@ -45,11 +43,6 @@ export function ResetPasswordFormView({
         <CardContent>
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-              {serverError && (
-                <div className="mb-2 text-sm text-destructive font-medium">
-                  {serverError}
-                </div>
-              )}
 
               <FormField
                 control={form.control}

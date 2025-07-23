@@ -23,13 +23,11 @@ import { AUTH_PATH } from "@/shared/constants/routes";
 interface RegisterFormViewProps {
   form: UseFormReturn<RegisterSchema>;
   onSubmit: (data: RegisterSchema) => void;
-  serverError: string | null;
 }
 
 export function RegisterFormView({
   form,
   onSubmit,
-  serverError,
 }: RegisterFormViewProps) {
   return (
     <div className="flex flex-col gap-6">
@@ -43,11 +41,6 @@ export function RegisterFormView({
         <CardContent>
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-              {serverError && (
-                <div className="mb-2 text-sm text-destructive font-medium">
-                  {serverError}
-                </div>
-              )}
 
               <FormField
                 control={form.control}

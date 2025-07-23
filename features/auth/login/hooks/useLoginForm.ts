@@ -7,9 +7,10 @@ import {
 } from "@/features/auth/shared/schema/auth.schema";
 import { loginAction } from "@/features/auth/login/actions/login.action";
 import { injectFieldErrors } from "@/shared/lib/injectFieldErrors";
+import { useToastError } from "@/shared/lib/hooks/useToastError";
 
 export function useLoginForm() {
-  const [serverError, setServerError] = useState<string | null>(null);
+  const { serverError, setServerError, clearServerError } = useToastError();
   const [isLoading, setIsLoading] = useState(false);
 
   const form = useForm<LoginSchema>({
@@ -21,7 +22,7 @@ export function useLoginForm() {
   });
 
   const onSubmit = async (data: LoginSchema) => {
-    setServerError(null);
+    clearServerError();
     setIsLoading(true);
 
     const formData = new FormData();
@@ -39,5 +40,5 @@ export function useLoginForm() {
     return true;
   };
 
-  return { form, onSubmit, serverError, isLoading };
+  return { form, onSubmit, isLoading };
 }
