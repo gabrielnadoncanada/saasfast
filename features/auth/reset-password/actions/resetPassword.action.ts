@@ -9,7 +9,7 @@ import { FormResult } from "@/shared/types/api.types";
 import { safeParseForm } from "@/shared/lib/safeParseForm";
 import { getStatusRedirect } from "@/shared/lib/redirect";
 import { redirect } from "next/navigation";
-import { AUTH_PATH } from "@/shared/constants/routes";
+import { AUTH_PATH, DASHBOARD_PATH } from "@/shared/constants/routes";
 
 export async function resetPasswordAction(
   formData: FormData
@@ -31,9 +31,9 @@ export async function resetPasswordAction(
 
   redirect(
     getStatusRedirect(
-      AUTH_PATH,
+      DASHBOARD_PATH,
       "Mot de passe réinitialisé.",
-      "Vous pouvez maintenant vous connecter avec votre nouveau mot de passe."
+      "Vous êtes maintenant connecté avec votre nouveau mot de passe."
     )
   );
 }

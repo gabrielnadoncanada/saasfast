@@ -19,6 +19,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { FORGOT_PASSWORD_PATH, REGISTER_PATH } from "@/shared/constants/routes";
+import { GitHubButton } from "./GitHubButton";
 
 interface LoginFormViewProps {
   form: UseFormReturn<LoginSchema>;
@@ -50,6 +51,14 @@ export function LoginFormView({
                   {serverError}
                 </div>
               )}
+              <div className="flex flex-col gap-4">
+                <GitHubButton className="w-full" disabled={isLoading} />
+              </div>
+              <div className="after:border-border relative text-center text-sm after:absolute after:inset-0 after:top-1/2 after:z-0 after:flex after:items-center after:border-t">
+                <span className="bg-card text-muted-foreground relative z-10 px-2">
+                  Ou continuez avec
+                </span>
+              </div>
 
               <FormField
                 control={form.control}
