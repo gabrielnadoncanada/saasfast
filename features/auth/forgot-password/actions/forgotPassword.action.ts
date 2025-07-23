@@ -27,15 +27,17 @@ export async function forgotPasswordAction(
     redirectTo: `${process.env.NEXT_PUBLIC_SITE_URL}/auth/api/reset`,
   });
 
+  // Toujours montrer le même message de succès, même si l'email n'existe pas
+  // Cela évite l'énumération d'utilisateurs
   if (error) {
-    return { success: false, error: error.message ?? "Erreur inconnue" };
+    console.error("Forgot password error:", error.message);
   }
 
   redirect(
     getStatusRedirect(
       AUTH_PATH,
       "Email envoyé.",
-      "Vérifiez votre boîte de réception pour réinitialiser votre mot de passe."
+      "Si cette adresse e-mail existe, vous recevrez un lien de réinitialisation."
     )
   );
 }

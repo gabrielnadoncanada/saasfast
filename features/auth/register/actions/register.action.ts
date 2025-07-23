@@ -31,7 +31,17 @@ export async function registerAction(
   });
 
   if (authError) {
-    return { success: false, error: authError.message };
+    // Normaliser les messages d'erreur pour éviter l'énumération d'utilisateurs
+    if (authError.message.includes("already registered") || authError.message.includes("already exists")) {
+      return { 
+        success: false, 
+        error: "Cette adresse e-mail est déjà utilisée." 
+      };
+    }
+    return { 
+      success: false, 
+      error: "Une erreur est survenue lors de la création du compte. Veuillez réessayer." 
+    };
   }
 
   // Le profil sera créé lors de la confirmation email

@@ -26,7 +26,11 @@ export async function resetPasswordAction(
   const { error } = await supabase.auth.updateUser({ password });
 
   if (error) {
-    return { success: false, error: error.message ?? "Erreur inconnue" };
+    console.error("Reset password error:", error.message);
+    return { 
+      success: false, 
+      error: "Une erreur est survenue lors de la réinitialisation. Veuillez réessayer." 
+    };
   }
 
   redirect(

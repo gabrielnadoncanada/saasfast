@@ -33,7 +33,6 @@ export default function RootLayout({
         <Suspense>
           <Toaster />
         </Suspense>
-        allo
       </body>
     </html>
   );

@@ -10,6 +10,8 @@ import { safeParseForm } from "@/shared/lib/safeParseForm";
 import { redirect } from "next/navigation";
 import { getStatusRedirect } from "@/shared/lib/redirect";
 import { DASHBOARD_PATH } from "@/shared/constants/routes";
+import { loginRateLimit, getClientIP } from "@/shared/lib/rateLimit";
+import { headers } from "next/headers";
 
 export async function loginAction(
   formData: FormData
@@ -23,9 +25,10 @@ export async function loginAction(
   const { error } = await supabase.auth.signInWithPassword({ email, password });
 
   if (error) {
+    // Éviter de révéler des informations sensibles sur l'existence des comptes
     return {
       success: false,
-      error: error.message ?? "Erreur inconnue",
+      error: "Email ou mot de passe incorrect.",
     };
   }
 

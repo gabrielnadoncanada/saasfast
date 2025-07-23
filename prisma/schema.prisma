@@ -5,6 +5,9 @@ datasource db {
 
 generator client {
   provider = "prisma-client-js"
+  // Optimisations de performance
+  binaryTargets = ["native"]
+  engineType = "binary"
 }
 
 // --- ENUMS ---
@@ -88,6 +91,8 @@ model Membership {
   tenant Tenant    @relation(fields: [tenantId], references: [id])
 
   @@unique([userId, tenantId])
+  @@index([tenantId, role])
+  @@index([userId, status])
 }
 
 model Invitation {
@@ -104,6 +109,8 @@ model Invitation {
   tenant Tenant @relation(fields: [tenantId], references: [id])
 
   @@unique([tenantId, email])
+  @@index([token])
+  @@index([expiresAt])
 }
 
 model Subscription {
