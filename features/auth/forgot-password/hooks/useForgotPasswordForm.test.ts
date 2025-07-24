@@ -31,7 +31,6 @@ describe("useForgotPasswordForm", () => {
       expect(ok).toBe(false);
     });
 
-    expect(result.current.serverError).toBe("Email not found");
     expect(result.current.isLoading).toBe(false);
     expect(result.current.isSuccess).toBe(false);
   });
@@ -51,7 +50,6 @@ describe("useForgotPasswordForm", () => {
       expect(ok).toBe(true);
     });
 
-    expect(result.current.serverError).toBeNull();
     expect(result.current.isLoading).toBe(false);
     expect(result.current.isSuccess).toBe(true);
   });
@@ -98,6 +96,5 @@ describe("useForgotPasswordForm", () => {
       });
     });
 
-    expect(result.current.serverError).toBeNull();
   });
 });

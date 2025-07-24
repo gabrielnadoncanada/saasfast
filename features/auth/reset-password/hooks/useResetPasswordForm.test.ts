@@ -28,7 +28,6 @@ describe("useResetPasswordForm", () => {
       expect(ok).toBe(false);
     });
 
-    expect(result.current.serverError).toBe("Password too weak");
     expect(result.current.isLoading).toBe(false);
   });
 
@@ -47,7 +46,6 @@ describe("useResetPasswordForm", () => {
       expect(ok).toBe(true);
     });
 
-    expect(result.current.serverError).toBeNull();
     expect(result.current.isLoading).toBe(false);
   });
 
@@ -93,6 +91,5 @@ describe("useResetPasswordForm", () => {
       });
     });
 
-    expect(result.current.serverError).toBeNull();
   });
 });

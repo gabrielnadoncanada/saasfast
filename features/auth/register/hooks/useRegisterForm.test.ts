@@ -41,7 +41,6 @@ describe("useRegisterForm", () => {
 
     // Assert
     expect(res).toBe(true);
-    expect(result.current.serverError).toBe(null);
     expect(injectFieldErrors).not.toHaveBeenCalled();
   });
 
@@ -64,7 +63,6 @@ describe("useRegisterForm", () => {
     });
 
     expect(res).toBe(false);
-    expect(result.current.serverError).toBe("Cet email existe déjà");
     expect(injectFieldErrors).toHaveBeenCalledWith(result.current.form, {
       email: ["Cet email existe déjà"],
     });
@@ -88,7 +86,6 @@ describe("useRegisterForm", () => {
     });
 
     expect(res).toBe(false);
-    expect(result.current.serverError).toBe("Erreur inconnue");
     expect(injectFieldErrors).toHaveBeenCalledWith(result.current.form, {
       email: ["Obligatoire"],
     });

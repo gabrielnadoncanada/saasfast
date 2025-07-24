@@ -1,14 +1,6 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  // Optimisations de performance
-  experimental: {
-    optimizePackageImports: ["@radix-ui/react-icons", "lucide-react"],
-  },
-
-  // Compression
-  compress: true,
-
   async headers() {
     return [
       {

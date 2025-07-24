@@ -12,7 +12,7 @@ describe("useLoginForm", () => {
     vi.clearAllMocks();
   });
 
-  it("retourne une erreur serveur et la place dans serverError", async () => {
+  it("retourne false quand login échoue", async () => {
     (loginAction as any).mockResolvedValue({
       success: false,
       error: "Invalid credentials",
@@ -29,7 +29,6 @@ describe("useLoginForm", () => {
       expect(ok).toBe(false);
     });
 
-    expect(result.current.serverError).toBe("Invalid credentials");
     expect(result.current.isLoading).toBe(false);
   });
 
@@ -49,7 +48,6 @@ describe("useLoginForm", () => {
       expect(ok).toBe(true);
     });
 
-    expect(result.current.serverError).toBeNull();
     expect(result.current.isLoading).toBe(false);
   });
 

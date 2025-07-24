@@ -10,8 +10,6 @@ import { safeParseForm } from "@/shared/lib/safeParseForm";
 import { redirect } from "next/navigation";
 import { getStatusRedirect } from "@/shared/lib/redirect";
 import { DASHBOARD_PATH } from "@/shared/constants/routes";
-import { loginRateLimit, getClientIP } from "@/shared/lib/rateLimit";
-import { headers } from "next/headers";
 
 export async function loginAction(
   formData: FormData

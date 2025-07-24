@@ -1,17 +1,17 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { registerAction } from "./register.action";
 import { safeParseForm } from "@/shared/lib/safeParseForm";
-import { prisma } from "@/shared/api/prisma";
+import { db } from "@/shared/db";
 import { createClient } from "@/shared/api/supabase/server";
 
-vi.mock("@/shared/api/prisma", () => {
-  const mockPrismaCreate = vi.fn();
+vi.mock("@/shared/db", () => {
+  const mockInsert = vi.fn().mockReturnValue({
+    values: vi.fn().mockResolvedValue({}),
+  });
   return {
-    prisma: {
-      profile: {
-        create: mockPrismaCreate,
-        __mock: { mockPrismaCreate },
-      },
+    db: {
+      insert: mockInsert,
+      __mock: { mockInsert },
     },
   };
 });
@@ -34,8 +34,8 @@ vi.mock("@/shared/lib/safeParseForm", () => ({
   safeParseForm: vi.fn(),
 }));
 
-const getPrismaCreate = () =>
-  (prisma.profile as any).__mock.mockPrismaCreate as ReturnType<typeof vi.fn>;
+const getDbInsert = () =>
+  (db as any).__mock.mockInsert as ReturnType<typeof vi.fn>;
 
 const getSignUp = () =>
   (createClient() as any).__mock.mockSignUp as ReturnType<typeof vi.fn>;
@@ -93,7 +93,7 @@ describe("registerAction", () => {
     }
   });
 
-  it("rollback si la création du profil Prisma échoue", async () => {
+  it("rollback si la création du profil DB échoue", async () => {
     (safeParseForm as any).mockResolvedValueOnce({
       success: true,
       data: { email: "foo@mail.com", password: "123456", full_name: "Foo" },
@@ -102,14 +102,16 @@ describe("registerAction", () => {
       data: { user: { id: "user-1" } },
       error: null,
     });
-    getPrismaCreate().mockRejectedValueOnce(new Error("Erreur Prisma"));
+    getDbInsert().mockReturnValue({
+      values: vi.fn().mockRejectedValue(new Error("Erreur DB")),
+    });
 
     const result = await registerAction(
       createRegisterForm("foo@mail.com", "123456", "Foo")
     );
     expect(result.success).toBe(false);
     if (!result.success) {
-      expect(result.error).toMatch(/erreur prisma/i);
+      expect(result.error).toMatch(/erreur db/i);
       expect(getDeleteUser()).toHaveBeenCalledWith("user-1");
     }
   });
@@ -123,7 +125,9 @@ describe("registerAction", () => {
       data: { user: { id: "user-1" } },
       error: null,
     });
-    getPrismaCreate().mockResolvedValueOnce({ id: "user-1" });
+    getDbInsert().mockReturnValue({
+      values: vi.fn().mockResolvedValue({ id: "user-1" }),
+    });
 
     const result = await registerAction(
       createRegisterForm("foo@mail.com", "123456", "Foo")
