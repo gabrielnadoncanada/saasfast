@@ -7,7 +7,7 @@ import {
 } from "@/features/auth/shared/schema/auth.schema";
 import { forgotPasswordAction } from "@/features/auth/forgot-password/actions/forgotPassword.action";
 import { injectFieldErrors } from "@/shared/lib/injectFieldErrors";
-import { useToastError } from "@/shared/lib/hooks/useToastError";
+import { useToastError } from "@/shared/hooks/useToastError";
 
 export function useForgotPasswordForm() {
   const { serverError, setServerError, clearServerError } = useToastError();

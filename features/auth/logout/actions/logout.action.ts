@@ -1,6 +1,6 @@
 "use server";
 
-import { createClient } from "@/shared/api/supabase/server";
+import { createClient } from "@/shared/db/supabase/server";
 import { redirect } from "next/navigation";
 import { AUTH_PATH } from "@/shared/constants/routes";
 import { getStatusRedirect } from "@/shared/lib/redirect";

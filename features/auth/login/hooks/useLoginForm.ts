@@ -7,7 +7,7 @@ import {
 } from "@/features/auth/shared/schema/auth.schema";
 import { loginAction } from "@/features/auth/login/actions/login.action";
 import { injectFieldErrors } from "@/shared/lib/injectFieldErrors";
-import { useToastError } from "@/shared/lib/hooks/useToastError";
+import { useToastError } from "@/shared/hooks/useToastError";
 
 export function useLoginForm() {
   const { serverError, setServerError, clearServerError } = useToastError();

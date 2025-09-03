@@ -16,7 +16,12 @@ vi.mock("@/shared/api/supabase/server", () => ({
   })),
 }));
 
-import { createClient } from "@/shared/api/supabase/server";
+vi.mock("next/navigation", () => ({
+  redirect: vi.fn(),
+}));
+
+import { createClient } from "@/shared/db/supabase/server";
+import { redirect } from "next/navigation";
 
 describe("loginAction", () => {
   beforeEach(() => {
@@ -45,26 +50,21 @@ describe("loginAction", () => {
     );
     expect(result.success).toBe(false);
     if (!result.success) {
-      expect(result.error).toMatch(/Mauvais identifiants/i);
+      expect(result.error).toMatch(/Email ou mot de passe incorrect/i);
     }
   });
 
-  it("retourne un succès et les données si login OK", async () => {
+  it("redirects to dashboard when login succeeds", async () => {
     (createClient as any).mockReturnValue({
       auth: {
         signInWithPassword: vi.fn().mockResolvedValue({ error: null }),
       },
     });
 
-    const result = await loginAction(
-      createLoginForm("user@mail.com", "goodpassword")
+    await loginAction(createLoginForm("user@mail.com", "goodpassword"));
+
+    expect(redirect).toHaveBeenCalledWith(
+      expect.stringContaining("/dashboard")
     );
-    expect(result.success).toBe(true);
-    if (result.success) {
-      expect(result.data).toEqual({
-        email: "user@mail.com",
-        password: "goodpassword",
-      });
-    }
   });
 });

@@ -7,7 +7,7 @@ import {
 } from "@/features/auth/shared/schema/auth.schema";
 import { resetPasswordAction } from "@/features/auth/reset-password/actions/resetPassword.action";
 import { injectFieldErrors } from "@/shared/lib/injectFieldErrors";
-import { useToastError } from "@/shared/lib/hooks/useToastError";
+import { useToastError } from "@/shared/hooks/useToastError";
 
 export function useResetPasswordForm() {
   const { serverError, setServerError, clearServerError } = useToastError();

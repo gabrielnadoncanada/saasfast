@@ -1,26 +1,30 @@
 import { type EmailOtpType } from "@supabase/supabase-js";
 import { type NextRequest } from "next/server";
-import { createClient } from "@/shared/api/supabase/server";
+import { createClient } from "@/shared/db/supabase/server";
 import { getStatusRedirect, getErrorRedirect } from "@/shared/lib/redirect";
 import { redirect } from "next/navigation";
 import { ensureProfileExists } from "@/features/auth/shared/lib/profile";
 
 function safeRedirectUrl(url: string): string {
   // Vérifier que l'URL est définie et non vide
-  if (!url || typeof url !== 'string') {
+  if (!url || typeof url !== "string") {
     return "/";
   }
-  
+
   // Empêcher les redirections vers des URLs externes
-  if (url.startsWith("http://") || url.startsWith("https://") || url.startsWith("//")) {
+  if (
+    url.startsWith("http://") ||
+    url.startsWith("https://") ||
+    url.startsWith("//")
+  ) {
     return "/";
   }
-  
+
   // Empêcher les redirections vers des protocoles dangereux
   if (url.includes(":") && !url.startsWith("/")) {
     return "/";
   }
-  
+
   // S'assurer que l'URL commence par /
   return url.startsWith("/") ? url : "/";
 }

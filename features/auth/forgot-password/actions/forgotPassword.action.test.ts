@@ -15,7 +15,12 @@ vi.mock("@/shared/api/supabase/server", () => ({
   })),
 }));
 
-import { createClient } from "@/shared/api/supabase/server";
+vi.mock("next/navigation", () => ({
+  redirect: vi.fn(),
+}));
+
+import { createClient } from "@/shared/db/supabase/server";
+import { redirect } from "next/navigation";
 
 describe("forgotPasswordAction", () => {
   beforeEach(() => {
@@ -40,7 +45,7 @@ describe("forgotPasswordAction", () => {
     }
   });
 
-  it("retourne une erreur si l'auth Supabase échoue", async () => {
+  it("redirects with error message when Supabase fails", async () => {
     (createClient as any).mockReturnValue({
       auth: {
         resetPasswordForEmail: vi
@@ -49,34 +54,24 @@ describe("forgotPasswordAction", () => {
       },
     });
 
-    const result = await forgotPasswordAction(
-      createForgotPasswordForm("notfound@mail.com")
-    );
-    expect(result.success).toBe(false);
-    if (!result.success) {
-      expect(result.error).toMatch(/Email not found/i);
-    }
+    await forgotPasswordAction(createForgotPasswordForm("notfound@mail.com"));
+
+    expect(redirect).toHaveBeenCalledWith(expect.stringContaining("/auth"));
   });
 
-  it("retourne un succès et les données si forgot password OK", async () => {
+  it("redirects with success message when email is sent", async () => {
     (createClient as any).mockReturnValue({
       auth: {
         resetPasswordForEmail: vi.fn().mockResolvedValue({ error: null }),
       },
     });
 
-    const result = await forgotPasswordAction(
-      createForgotPasswordForm("user@mail.com")
-    );
-    expect(result.success).toBe(true);
-    if (result.success) {
-      expect(result.data).toEqual({
-        email: "user@mail.com",
-      });
-    }
+    await forgotPasswordAction(createForgotPasswordForm("user@mail.com"));
+
+    expect(redirect).toHaveBeenCalledWith(expect.stringContaining("/auth"));
   });
 
-  it("appelle resetPasswordForEmail avec les bons paramètres", async () => {
+  it("calls resetPasswordForEmail with correct parameters", async () => {
     const mockResetPasswordForEmail = vi
       .fn()
       .mockResolvedValue({ error: null });
@@ -89,7 +84,7 @@ describe("forgotPasswordAction", () => {
     await forgotPasswordAction(createForgotPasswordForm("user@mail.com"));
 
     expect(mockResetPasswordForEmail).toHaveBeenCalledWith("user@mail.com", {
-      redirectTo: `${process.env.NEXT_PUBLIC_SITE_URL}/reset-password`,
+      redirectTo: `${process.env.NEXT_PUBLIC_SITE_URL}/auth/api/reset`,
     });
   });
 });

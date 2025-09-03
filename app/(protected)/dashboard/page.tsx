@@ -1,4 +1,4 @@
-import { createClient } from "@/shared/api/supabase/server";
+import { createClient } from "@/shared/db/supabase/server";
 import { LogoutButton } from "@/features/auth/logout/ui/LogoutButton";
 
 export default async function DashboardPage() {

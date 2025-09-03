@@ -4,7 +4,7 @@ import {
   ResetPasswordSchema,
   resetPasswordSchema,
 } from "@/features/auth/shared/schema/auth.schema";
-import { createClient } from "@/shared/api/supabase/server";
+import { createClient } from "@/shared/db/supabase/server";
 import { FormResult } from "@/shared/types/api.types";
 import { safeParseForm } from "@/shared/lib/safeParseForm";
 import { getStatusRedirect } from "@/shared/lib/redirect";
@@ -27,9 +27,10 @@ export async function resetPasswordAction(
 
   if (error) {
     console.error("Reset password error:", error.message);
-    return { 
-      success: false, 
-      error: "Une erreur est survenue lors de la réinitialisation. Veuillez réessayer." 
+    return {
+      success: false,
+      error:
+        "Une erreur est survenue lors de la réinitialisation. Veuillez réessayer.",
     };
   }
 

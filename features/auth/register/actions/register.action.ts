@@ -6,7 +6,7 @@ import {
 } from "@/features/auth/shared/schema/auth.schema";
 import { safeParseForm } from "@/shared/lib/safeParseForm";
 import type { FormResult } from "@/shared/types/api.types";
-import { createClient } from "@/shared/api/supabase/server";
+import { createClient } from "@/shared/db/supabase/server";
 import { getStatusRedirect } from "@/shared/lib/redirect";
 import { redirect } from "next/navigation";
 import { AUTH_PATH } from "@/shared/constants/routes";
@@ -32,15 +32,19 @@ export async function registerAction(
 
   if (authError) {
     // Normaliser les messages d'erreur pour éviter l'énumération d'utilisateurs
-    if (authError.message.includes("already registered") || authError.message.includes("already exists")) {
-      return { 
-        success: false, 
-        error: "Cette adresse e-mail est déjà utilisée." 
+    if (
+      authError.message.includes("already registered") ||
+      authError.message.includes("already exists")
+    ) {
+      return {
+        success: false,
+        error: "Cette adresse e-mail est déjà utilisée.",
       };
     }
-    return { 
-      success: false, 
-      error: "Une erreur est survenue lors de la création du compte. Veuillez réessayer." 
+    return {
+      success: false,
+      error:
+        "Une erreur est survenue lors de la création du compte. Veuillez réessayer.",
     };
   }
 

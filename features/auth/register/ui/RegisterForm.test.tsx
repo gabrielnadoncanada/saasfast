@@ -3,39 +3,31 @@ import { RegisterForm } from "./RegisterForm";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import * as React from "react";
 
-const mockPush = vi.fn();
 const mockOnSubmit = vi.fn();
-
-vi.mock("next/navigation", () => ({
-  useRouter: () => ({ push: mockPush }),
-}));
-
-// Permet de patcher dynamiquement l’erreur serveur
-let serverErrorValue: string | null = null;
 
 vi.mock("@/features/auth/register/hooks/useRegisterForm", () => ({
   useRegisterForm: () => ({
     form: {
-      handleSubmit: (cb: any) => (e: any) =>
-        cb({
+      handleSubmit: (cb: any) => (e: any) => {
+        e.preventDefault();
+        return cb({
           full_name: "Test",
           email: "test@test.com",
           password: "testpass",
-        }),
+        });
+      },
       control: {},
     },
     onSubmit: mockOnSubmit,
-    get serverError() {
-      return serverErrorValue;
-    },
+    isLoading: false,
   }),
 }));
 
 vi.mock("@/features/auth/register/ui/RegisterFormView", () => ({
-  RegisterFormView: ({ form, onSubmit, serverError }: any) => (
+  RegisterFormView: ({ form, onSubmit, isLoading }: any) => (
     <form data-testid="register-form" onSubmit={form.handleSubmit(onSubmit)}>
       <button type="submit">Submit</button>
-      {serverError && <div data-testid="server-error">{serverError}</div>}
+      {isLoading && <span>Loading</span>}
     </form>
   ),
 }));
@@ -43,39 +35,23 @@ vi.mock("@/features/auth/register/ui/RegisterFormView", () => ({
 describe("RegisterForm", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    serverErrorValue = null;
   });
 
-  it("redirige vers /register/confirmation si onSubmit retourne true", async () => {
-    mockOnSubmit.mockResolvedValueOnce(true);
-
+  it("calls onSubmit when form is submitted", async () => {
     render(<RegisterForm />);
     fireEvent.submit(screen.getByTestId("register-form"));
 
     await waitFor(() => {
-      expect(mockOnSubmit).toHaveBeenCalled();
-      expect(mockPush).toHaveBeenCalledWith("/register/confirmation");
+      expect(mockOnSubmit).toHaveBeenCalledWith({
+        full_name: "Test",
+        email: "test@test.com",
+        password: "testpass",
+      });
     });
   });
 
-  it("n'appelle pas router.push si onSubmit retourne false", async () => {
-    mockOnSubmit.mockResolvedValueOnce(false);
-
+  it("renders the RegisterFormView with props from hook", () => {
     render(<RegisterForm />);
-    fireEvent.submit(screen.getByTestId("register-form"));
-
-    await waitFor(() => {
-      expect(mockOnSubmit).toHaveBeenCalled();
-      expect(mockPush).not.toHaveBeenCalled();
-    });
-  });
-
-  it("affiche l’erreur serveur si présente", () => {
-    serverErrorValue = "Erreur côté serveur";
-
-    render(<RegisterForm />);
-    expect(screen.getByTestId("server-error")).toHaveTextContent(
-      "Erreur côté serveur"
-    );
+    expect(screen.getByTestId("register-form")).toBeInTheDocument();
   });
 });

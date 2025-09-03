@@ -1,3 +1,4 @@
+import React from "react";
 import { Button } from "@/components/ui/button";
 import { signInWithGithub } from "@/features/auth/login/actions/githubAuth.action";
 

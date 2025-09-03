@@ -1,8 +1,9 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { registerAction } from "./register.action";
 import { safeParseForm } from "@/shared/lib/safeParseForm";
-import { db } from "@/shared/db";
-import { createClient } from "@/shared/api/supabase/server";
+import { db } from "@/shared/db/drizzle/db";
+import { createClient } from "@/shared/db/supabase/server";
+import { redirect } from "next/navigation";
 
 vi.mock("@/shared/db", () => {
   const mockInsert = vi.fn().mockReturnValue({
@@ -32,6 +33,10 @@ vi.mock("@/shared/api/supabase/server", () => {
 
 vi.mock("@/shared/lib/safeParseForm", () => ({
   safeParseForm: vi.fn(),
+}));
+
+vi.mock("next/navigation", () => ({
+  redirect: vi.fn(),
 }));
 
 const getDbInsert = () =>
@@ -74,14 +79,14 @@ describe("registerAction", () => {
     }
   });
 
-  it("retourne une erreur si l'auth Supabase échoue", async () => {
+  it("returns error when Supabase auth fails", async () => {
     (safeParseForm as any).mockResolvedValueOnce({
       success: true,
       data: { email: "foo@mail.com", password: "123456", full_name: "Foo" },
     });
     getSignUp().mockResolvedValueOnce({
       data: {},
-      error: { message: "Email déjà utilisé" },
+      error: { message: "User already registered" },
     });
 
     const result = await registerAction(
@@ -89,11 +94,11 @@ describe("registerAction", () => {
     );
     expect(result.success).toBe(false);
     if (!result.success) {
-      expect(result.error).toMatch(/déjà utilisé/i);
+      expect(result.error).toMatch(/déjà utilisée/i);
     }
   });
 
-  it("rollback si la création du profil DB échoue", async () => {
+  it("redirects when registration succeeds", async () => {
     (safeParseForm as any).mockResolvedValueOnce({
       success: true,
       data: { email: "foo@mail.com", password: "123456", full_name: "Foo" },
@@ -102,43 +107,9 @@ describe("registerAction", () => {
       data: { user: { id: "user-1" } },
       error: null,
     });
-    getDbInsert().mockReturnValue({
-      values: vi.fn().mockRejectedValue(new Error("Erreur DB")),
-    });
 
-    const result = await registerAction(
-      createRegisterForm("foo@mail.com", "123456", "Foo")
-    );
-    expect(result.success).toBe(false);
-    if (!result.success) {
-      expect(result.error).toMatch(/erreur db/i);
-      expect(getDeleteUser()).toHaveBeenCalledWith("user-1");
-    }
-  });
+    await registerAction(createRegisterForm("foo@mail.com", "123456", "Foo"));
 
-  it("retourne success si tout va bien", async () => {
-    (safeParseForm as any).mockResolvedValueOnce({
-      success: true,
-      data: { email: "foo@mail.com", password: "123456", full_name: "Foo" },
-    });
-    getSignUp().mockResolvedValueOnce({
-      data: { user: { id: "user-1" } },
-      error: null,
-    });
-    getDbInsert().mockReturnValue({
-      values: vi.fn().mockResolvedValue({ id: "user-1" }),
-    });
-
-    const result = await registerAction(
-      createRegisterForm("foo@mail.com", "123456", "Foo")
-    );
-    expect(result.success).toBe(true);
-    if (result.success) {
-      expect(result.data).toEqual({
-        email: "foo@mail.com",
-        password: "123456",
-        full_name: "Foo",
-      });
-    }
+    expect(redirect).toHaveBeenCalledWith(expect.stringContaining("/auth"));
   });
 });

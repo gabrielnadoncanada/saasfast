@@ -1,4 +1,4 @@
-import { createClient } from "@/shared/api/supabase/server";
+import { createClient } from "@/shared/db/supabase/server";
 import { type NextRequest } from "next/server";
 import { getErrorRedirect, getStatusRedirect } from "@/shared/lib/redirect";
 import { redirect } from "next/navigation";

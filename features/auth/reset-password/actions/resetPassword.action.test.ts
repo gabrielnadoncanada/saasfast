@@ -15,7 +15,12 @@ vi.mock("@/shared/api/supabase/server", () => ({
   })),
 }));
 
-import { createClient } from "@/shared/api/supabase/server";
+vi.mock("next/navigation", () => ({
+  redirect: vi.fn(),
+}));
+
+import { createClient } from "@/shared/db/supabase/server";
+import { redirect } from "next/navigation";
 
 describe("resetPasswordAction", () => {
   beforeEach(() => {
@@ -38,7 +43,7 @@ describe("resetPasswordAction", () => {
     }
   });
 
-  it("retourne une erreur si l'auth Supabase échoue", async () => {
+  it("returns error when Supabase fails", async () => {
     (createClient as any).mockReturnValue({
       auth: {
         updateUser: vi
@@ -48,33 +53,29 @@ describe("resetPasswordAction", () => {
     });
 
     const result = await resetPasswordAction(
-      createResetPasswordForm("weakpassword")
+      createResetPasswordForm("StrongPassword123!")
     );
     expect(result.success).toBe(false);
     if (!result.success) {
-      expect(result.error).toMatch(/Password too weak/i);
+      expect(result.error).toMatch(/Une erreur est survenue/i);
     }
   });
 
-  it("retourne un succès et les données si reset password OK", async () => {
+  it("redirects to dashboard when password reset succeeds", async () => {
     (createClient as any).mockReturnValue({
       auth: {
         updateUser: vi.fn().mockResolvedValue({ error: null }),
       },
     });
 
-    const result = await resetPasswordAction(
-      createResetPasswordForm("strongpassword123")
+    await resetPasswordAction(createResetPasswordForm("StrongPassword123!"));
+
+    expect(redirect).toHaveBeenCalledWith(
+      expect.stringContaining("/dashboard")
     );
-    expect(result.success).toBe(true);
-    if (result.success) {
-      expect(result.data).toEqual({
-        password: "strongpassword123",
-      });
-    }
   });
 
-  it("appelle updateUser avec les bons paramètres", async () => {
+  it("calls updateUser with correct parameters", async () => {
     const mockUpdateUser = vi.fn().mockResolvedValue({ error: null });
     (createClient as any).mockReturnValue({
       auth: {
@@ -82,10 +83,10 @@ describe("resetPasswordAction", () => {
       },
     });
 
-    await resetPasswordAction(createResetPasswordForm("strongpassword123"));
+    await resetPasswordAction(createResetPasswordForm("StrongPassword123!"));
 
     expect(mockUpdateUser).toHaveBeenCalledWith({
-      password: "strongpassword123",
+      password: "StrongPassword123!",
     });
   });
 });

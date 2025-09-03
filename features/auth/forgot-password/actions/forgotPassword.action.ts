@@ -4,7 +4,7 @@ import {
   ForgotPasswordSchema,
   forgotPasswordSchema,
 } from "@/features/auth/shared/schema/auth.schema";
-import { createClient } from "@/shared/api/supabase/server";
+import { createClient } from "@/shared/db/supabase/server";
 import { FormResult } from "@/shared/types/api.types";
 import { safeParseForm } from "@/shared/lib/safeParseForm";
 import { redirect } from "next/navigation";
