@@ -1,6 +1,7 @@
 "use server";
 
-import { db, invitations } from "@/shared/db/drizzle/db";
+import { db } from "@/shared/db/drizzle/db";
+import { invitations } from "@/shared/db/drizzle/schema/invitations";
 import {
   getCurrentUserTenantContext,
   requireTenantContext,
@@ -13,7 +14,7 @@ import type { FormResult } from "@/shared/types/api.types";
 import { randomBytes } from "crypto";
 
 const inviteSchema = z.object({
-  email: z.string().email("Email invalide"),
+  email: z.email("Email invalide"),
   role: z.enum(["ADMIN", "MEMBER", "BILLING_ADMIN"]), // Don't allow inviting as OWNER
 });
 

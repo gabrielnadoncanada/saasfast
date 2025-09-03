@@ -11,3 +11,5 @@ const client = postgres(process.env.DATABASE_URL!, {
 export const db = drizzle(client, { schema });
 
 export type DrizzleDB = typeof db;
+
+export * from "./schema";
