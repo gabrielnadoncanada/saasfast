@@ -1,19 +1,21 @@
-import { type NextRequest } from "next/server";
+import { type NextRequest, NextResponse } from "next/server";
 import { updateSession } from "@/shared/db/supabase/middleware";
+import {
+  DASHBOARD_PATH,
+  AUTH_PATH,
+  RESET_PASSWORD_PATH,
+  AUTH_CALLBACK_PATH,
+} from "@/shared/constants/routes";
 
 export async function middleware(request: NextRequest) {
-  return await updateSession(request);
+  return updateSession(request);
 }
 
 export const config = {
   matcher: [
-    /*
-     * Match all request paths except for the ones starting with:
-     * - _next/static (static files)
-     * - _next/image (image optimization files)
-     * - favicon.ico (favicon file)
-     * Feel free to modify this pattern to include more paths.
-     */
-    "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
+    `${DASHBOARD_PATH}/:path*`,
+    `${AUTH_PATH}/:path*`,
+    RESET_PASSWORD_PATH,
+    AUTH_CALLBACK_PATH,
   ],
 };

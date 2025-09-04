@@ -6,10 +6,16 @@ import {
   RESET_PASSWORD_PATH,
 } from "@/shared/constants/routes";
 
+function withSupabaseCookies(
+  base: NextResponse,
+  supabaseResponse: NextResponse
+) {
+  supabaseResponse.cookies.getAll().forEach((c) => base.cookies.set(c));
+  return base;
+}
+
 export async function updateSession(request: NextRequest) {
-  let supabaseResponse = NextResponse.next({
-    request,
-  });
+  let supabaseResponse = NextResponse.next({ request });
 
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -23,9 +29,7 @@ export async function updateSession(request: NextRequest) {
           cookiesToSet.forEach(({ name, value }) =>
             request.cookies.set(name, value)
           );
-          supabaseResponse = NextResponse.next({
-            request,
-          });
+          supabaseResponse = NextResponse.next({ request });
           cookiesToSet.forEach(({ name, value, options }) =>
             supabaseResponse.cookies.set(name, value, options)
           );
@@ -34,44 +38,31 @@ export async function updateSession(request: NextRequest) {
     }
   );
 
-  // IMPORTANT: Avoid writing any logic between createServerClient and
-  // supabase.auth.getUser(). A simple mistake could make it very hard to debug
-  // issues with users being randomly logged out.
+  const {
+    data: { user },
+    error,
+  } = await supabase.auth.getUser();
 
-  const user = await supabase.auth.getUser();
+  const isAuthed = !!user && !error;
+  const path = request.nextUrl.pathname;
 
-  // Cas 1 : Dashboard privé → redirect si pas authentifié
-  if (request.nextUrl.pathname.startsWith(DASHBOARD_PATH) && user.error) {
-    return NextResponse.redirect(new URL(AUTH_PATH, request.url));
+  if (path.startsWith(DASHBOARD_PATH) && !isAuthed) {
+    return withSupabaseCookies(
+      NextResponse.redirect(new URL(AUTH_PATH, request.url)),
+      supabaseResponse
+    );
   }
 
-  // Cas 2 : Reset password → redirect vers /auth si NON authentifié
-  if (request.nextUrl.pathname === RESET_PASSWORD_PATH && user.error) {
-    return NextResponse.redirect(new URL(AUTH_PATH, request.url));
-  }
-
-  // Cas 3 : Reset password → on laisse passer si authentifié
-  if (request.nextUrl.pathname === RESET_PASSWORD_PATH && !user.error) {
+  if (path === RESET_PASSWORD_PATH) {
     return supabaseResponse;
   }
 
-  // Cas 4 : Auth (login/register) → redirect dashboard si déjà authentifié
-  if (request.nextUrl.pathname.startsWith(AUTH_PATH) && !user.error) {
-    return NextResponse.redirect(new URL(DASHBOARD_PATH, request.url));
+  if (path.startsWith(AUTH_PATH) && isAuthed) {
+    return withSupabaseCookies(
+      NextResponse.redirect(new URL(DASHBOARD_PATH, request.url)),
+      supabaseResponse
+    );
   }
-
-  // IMPORTANT: You *must* return the supabaseResponse object as it is. If you're
-  // creating a new response object with NextResponse.next() make sure to:
-  // 1. Pass the request in it, like so:
-  //    const myNewResponse = NextResponse.next({ request })
-  // 2. Copy over the cookies, like so:
-  //    myNewResponse.cookies.setAll(supabaseResponse.cookies.getAll())
-  // 3. Change the myNewResponse object to fit your needs, but avoid changing
-  //    the cookies!
-  // 4. Finally:
-  //    return myNewResponse
-  // If this is not done, you may be causing the browser and server to go out
-  // of sync and terminate the user's session prematurely!
 
   return supabaseResponse;
 }

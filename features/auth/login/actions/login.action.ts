@@ -23,7 +23,6 @@ export async function loginAction(
   const { error } = await supabase.auth.signInWithPassword({ email, password });
 
   if (error) {
-    // Éviter de révéler des informations sensibles sur l'existence des comptes
     return {
       success: false,
       error: "Email ou mot de passe incorrect.",
