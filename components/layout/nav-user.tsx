@@ -26,11 +26,13 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar";
 import { useUser } from "@/features/auth/shared/ui/UserProvider";
+import { ACCOUNT_SETTINGS_PATH } from "@/shared/constants/routes";
+import { useRouter } from "next/navigation";
 
 export function NavUser() {
   const { isMobile } = useSidebar();
   const { user, logout } = useUser();
-
+  const router = useRouter();
   return (
     <SidebarMenu>
       <SidebarMenuItem>
@@ -92,7 +94,9 @@ export function NavUser() {
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
             <DropdownMenuGroup>
-              <DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={() => router.push(ACCOUNT_SETTINGS_PATH)}
+              >
                 <BadgeCheck />
                 Account
               </DropdownMenuItem>

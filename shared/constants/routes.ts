@@ -1,5 +1,6 @@
 export const DASHBOARD_PATH = "/dashboard";
 export const PROFILE_PATH = "/dashboard/profile";
+export const ACCOUNT_SETTINGS_PATH = "/account/settings";
 export const CLIENTS_PATH = "/dashboard/clients";
 export const TIME_TRACKING_PATH = "/dashboard/time-tracking";
 export const INVOICES_PATH = "/dashboard/invoices";
