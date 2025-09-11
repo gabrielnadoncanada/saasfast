@@ -25,13 +25,22 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@/components/ui/sidebar";
-import { useUser } from "@/features/auth/shared/ui/UserProvider";
+import {
+  UserWithProfile,
+  useUser,
+} from "@/features/auth/shared/ui/UserTenantProvider";
 import { ACCOUNT_SETTINGS_PATH } from "@/shared/constants/routes";
 import { useRouter } from "next/navigation";
 
-export function NavUser() {
+export function NavUser({
+  user,
+  logout,
+}: {
+  user: UserWithProfile;
+  logout: () => void;
+}) {
   const { isMobile } = useSidebar();
-  const { user, logout } = useUser();
+
   const router = useRouter();
   return (
     <SidebarMenu>
@@ -44,8 +53,8 @@ export function NavUser() {
             >
               <Avatar className="h-8 w-8 rounded-lg">
                 <AvatarImage
-                  src={user?.profile?.avatarUrl}
-                  alt={user?.profile?.name}
+                  src={user?.profile?.avatarUrl || undefined}
+                  alt={user?.profile?.name || undefined}
                 />
                 <AvatarFallback className="rounded-lg">CN</AvatarFallback>
               </Avatar>
@@ -70,8 +79,8 @@ export function NavUser() {
               <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
                 <Avatar className="h-8 w-8 rounded-lg">
                   <AvatarImage
-                    src={user?.profile?.avatarUrl}
-                    alt={user?.profile?.name}
+                    src={user?.profile?.avatarUrl || undefined}
+                    alt={user?.profile?.name || undefined}
                   />
                   <AvatarFallback className="rounded-lg">CN</AvatarFallback>
                 </Avatar>

@@ -1,22 +1,18 @@
 import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/layout/app-sidebar";
-import { UserProvider } from "@/features/auth/shared/ui/UserProvider";
-import {
-  getCurrentUser,
-  requireAuthOrRedirect,
-} from "@/shared/db/drizzle/auth";
 import { Header } from "@/components/layout/header";
-import { redirect } from "next/navigation";
+import { UserTenantProvider } from "@/features/auth/shared/ui/UserTenantProvider";
+import { requireTenantContext } from "@/features/auth/shared/actions/getUserTenantData.action";
 
 export default async function DashboardLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const current = await requireAuthOrRedirect();
+  const initialData = await requireTenantContext();
 
   return (
-    <UserProvider initial={current}>
+    <UserTenantProvider initialData={initialData}>
       <SidebarProvider>
         <AppSidebar />
         <SidebarInset>
@@ -24,6 +20,6 @@ export default async function DashboardLayout({
           {children}
         </SidebarInset>
       </SidebarProvider>
-    </UserProvider>
+    </UserTenantProvider>
   );
 }

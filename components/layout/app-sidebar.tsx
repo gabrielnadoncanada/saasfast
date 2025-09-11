@@ -17,7 +17,10 @@ import {
 import { NavMain } from "@/components/layout/nav-main";
 import { NavProjects } from "@/components/layout/nav-projects";
 import { NavUser } from "@/components/layout/nav-user";
-import { TeamSwitcher } from "@/components/layout/team-switcher";
+import {
+  TeamSwitcher,
+  TenantSwitcher,
+} from "@/components/layout/tenant-switcher";
 import {
   Sidebar,
   SidebarContent,
@@ -25,26 +28,10 @@ import {
   SidebarHeader,
   SidebarRail,
 } from "@/components/ui/sidebar";
+import { useUser } from "@/features/auth/shared/ui/UserTenantProvider";
 
 // This is sample data.
 const data = {
-  teams: [
-    {
-      name: "Acme Inc",
-      logo: GalleryVerticalEnd,
-      plan: "Enterprise",
-    },
-    {
-      name: "Acme Corp.",
-      logo: AudioWaveform,
-      plan: "Startup",
-    },
-    {
-      name: "Evil Corp.",
-      logo: Command,
-      plan: "Free",
-    },
-  ],
   navMain: [
     {
       title: "Playground",
@@ -152,17 +139,18 @@ const data = {
 };
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+  const { user, logout, tenants } = useUser();
   return (
     <Sidebar collapsible="icon" {...props}>
       <SidebarHeader>
-        <TeamSwitcher teams={data.teams} />
+        <TenantSwitcher tenants={tenants} />
       </SidebarHeader>
       <SidebarContent>
         <NavMain items={data.navMain} />
         <NavProjects projects={data.projects} />
       </SidebarContent>
       <SidebarFooter>
-        <NavUser />
+        <NavUser user={user} logout={logout} />
       </SidebarFooter>
       <SidebarRail />
     </Sidebar>

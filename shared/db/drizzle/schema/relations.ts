@@ -8,7 +8,11 @@ import {
   auditLogs,
 } from "./index";
 
-export const profilesRelations = relations(profiles, ({ many }) => ({
+export const profilesRelations = relations(profiles, ({ one, many }) => ({
+  currentTenant: one(tenants, {
+    fields: [profiles.currentTenantId],
+    references: [tenants.id],
+  }),
   memberships: many(memberships),
   ownedTenants: many(tenants),
   auditLogs: many(auditLogs),

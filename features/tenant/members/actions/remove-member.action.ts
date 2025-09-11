@@ -2,11 +2,8 @@
 
 import { db, memberships } from "@/shared/db/drizzle/db";
 import { eq, and, count } from "drizzle-orm";
-import {
-  getCurrentUserTenantContext,
-  requireTenantContext,
-} from "@/features/tenant/shared/lib/context";
-import { isUserOwnerOrAdmin } from "@/features/tenant/shared/lib/tenant";
+import { requireTenantContext } from "@/features/auth/shared/actions/getUserTenantData.action";
+import { isUserOwnerOrAdmin } from "../../../tenant/shared/lib/tenant";
 import { z } from "zod";
 import { safeParseForm } from "@/shared/lib/safeParseForm";
 import type { FormResult } from "@/shared/types/api.types";
@@ -29,13 +26,19 @@ export async function removeMemberAction(
   const { membershipId } = parsed.data;
 
   // Get current user context
-  const context = await getCurrentUserTenantContext();
-  requireTenantContext(context);
+  const context = await requireTenantContext();
 
   // Check if user has permission to remove members
+  if (!context.user?.authUser || !context.currentTenant) {
+    return {
+      success: false,
+      error: "Contexte utilisateur ou tenant manquant.",
+    };
+  }
+
   const canRemoveMembers = await isUserOwnerOrAdmin(
-    context.user.id,
-    context.tenant.id
+    context.user.authUser.id,
+    context.currentTenant.tenant.id
   );
   if (!canRemoveMembers) {
     return {
@@ -52,7 +55,7 @@ export async function removeMemberAction(
       .where(
         and(
           eq(memberships.id, membershipId),
-          eq(memberships.tenantId, context.tenant.id)
+          eq(memberships.tenantId, context.currentTenant.tenant.id)
         )
       )
       .limit(1);
@@ -69,7 +72,7 @@ export async function removeMemberAction(
     // Prevent owners from being removed unless by another owner
     if (
       targetMembership.role === "OWNER" &&
-      context.membership.role !== "OWNER"
+      context.currentTenant.membership.role !== "OWNER"
     ) {
       return {
         success: false,
@@ -80,7 +83,7 @@ export async function removeMemberAction(
 
     // Prevent users from removing themselves if they are the only owner
     if (
-      targetMembership.userId === context.user.id &&
+      targetMembership.userId === context.user.authUser.id &&
       targetMembership.role === "OWNER"
     ) {
       const ownerCountResult = await db
@@ -88,7 +91,7 @@ export async function removeMemberAction(
         .from(memberships)
         .where(
           and(
-            eq(memberships.tenantId, context.tenant.id),
+            eq(memberships.tenantId, context.currentTenant.tenant.id),
             eq(memberships.role, "OWNER"),
             eq(memberships.status, "ACTIVE")
           )

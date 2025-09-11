@@ -20,6 +20,7 @@ export const profiles = pgTable("profiles", {
 
   name: varchar("name", { length: 255 }),
   avatarUrl: varchar("avatarUrl", { length: 500 }),
+  currentTenantId: uuid("currentTenantId"),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
 });
 

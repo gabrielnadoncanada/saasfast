@@ -1,33 +1,15 @@
-import { db, tenants, memberships, profiles } from "@/shared/db/drizzle/db";
+import { db, memberships } from "@/shared/db/drizzle/db";
 import { eq, and } from "drizzle-orm";
 
-export async function getUserTenants(userId: string) {
-  return await db
-    .select({
-      tenant: tenants,
-      membership: memberships,
-    })
-    .from(memberships)
-    .innerJoin(tenants, eq(tenants.id, memberships.tenantId))
-    .where(
-      and(eq(memberships.userId, userId), eq(memberships.status, "ACTIVE"))
-    );
-}
-
-export async function getTenantMembers(tenantId: string) {
-  return await db
-    .select({
-      profile: profiles,
-      membership: memberships,
-    })
-    .from(memberships)
-    .innerJoin(profiles, eq(profiles.id, memberships.userId))
-    .where(eq(memberships.tenantId, tenantId));
-}
-
-export async function getUserRoleInTenant(userId: string, tenantId: string) {
-  const result = await db
-    .select({ role: memberships.role })
+/**
+ * Check if a user has owner or admin privileges for a tenant
+ */
+export async function isUserOwnerOrAdmin(
+  userId: string,
+  tenantId: string
+): Promise<boolean> {
+  const membership = await db
+    .select()
     .from(memberships)
     .where(
       and(
@@ -38,13 +20,36 @@ export async function getUserRoleInTenant(userId: string, tenantId: string) {
     )
     .limit(1);
 
-  return result[0]?.role || null;
+  if (membership.length === 0) {
+    return false;
+  }
+
+  const role = membership[0].role;
+  return role === "OWNER" || role === "ADMIN";
 }
 
-export async function isUserOwnerOrAdmin(
+/**
+ * Check if a user is the owner of a tenant
+ */
+export async function isUserOwner(
   userId: string,
   tenantId: string
 ): Promise<boolean> {
-  const role = await getUserRoleInTenant(userId, tenantId);
-  return role === "OWNER" || role === "ADMIN";
+  const membership = await db
+    .select()
+    .from(memberships)
+    .where(
+      and(
+        eq(memberships.userId, userId),
+        eq(memberships.tenantId, tenantId),
+        eq(memberships.status, "ACTIVE")
+      )
+    )
+    .limit(1);
+
+  if (membership.length === 0) {
+    return false;
+  }
+
+  return membership[0].role === "OWNER";
 }
