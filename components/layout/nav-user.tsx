@@ -6,7 +6,9 @@ import {
   ChevronsUpDown,
   CreditCard,
   LogOut,
+  Moon,
   Sparkles,
+  Sun,
 } from "lucide-react";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -31,6 +33,7 @@ import {
 } from "@/features/auth/shared/ui/UserTenantProvider";
 import { ACCOUNT_SETTINGS_PATH } from "@/shared/constants/routes";
 import { useRouter } from "next/navigation";
+import { useTheme } from "next-themes";
 
 export function NavUser({
   user,
@@ -40,6 +43,7 @@ export function NavUser({
   logout: () => void;
 }) {
   const { isMobile } = useSidebar();
+  const { setTheme, theme } = useTheme();
 
   const router = useRouter();
   return (
@@ -108,6 +112,12 @@ export function NavUser({
               >
                 <BadgeCheck />
                 Account
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={() => setTheme(theme === "light" ? "dark" : "light")}
+              >
+                {theme === "light" ? <Sun /> : <Moon />}
+                Toggle Theme
               </DropdownMenuItem>
               <DropdownMenuItem>
                 <CreditCard />
