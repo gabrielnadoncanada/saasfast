@@ -1,0 +1,103 @@
+---
+title: Supabase + Drizzle ORM Patterns
+description: Règles pour l'intégration Supabase avec Drizzle ORM et gestion des tenants
+tags: [supabase, drizzle, database, multi-tenant]
+priority: high
+---
+
+# Supabase + Drizzle ORM Patterns
+
+## Database Schema Patterns
+
+### Multi-Tenant Architecture
+
+- Toujours utiliser `tenantId` pour l'isolation des données
+- Implémenter Row Level Security (RLS) sur Supabase
+- Utiliser des transactions Drizzle pour les opérations multi-tables
+
+```typescript
+// ✅ CORRECT : Transaction avec isolation tenant
+await db.transaction(async (trx) => {
+  const [profile] = await trx
+    .insert(profiles)
+    .values({...})
+    .returning();
+
+  await trx.insert(tenants)
+    .values({ownerId: profile.id})
+    .returning();
+});
+```
+
+### Schema-First avec Drizzle-Zod
+
+```typescript
+// ✅ CORRECT : Utiliser drizzle-zod pour la cohérence
+export const insertTenantSchema = createInsertSchema(tenants).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+export type InsertTenantSchema = z.infer<typeof insertTenantSchema>;
+```
+
+## Authentication Patterns
+
+### Server-Side Auth Checks
+
+```typescript
+// ✅ CORRECT : Toujours vérifier l'auth côté serveur
+export async function requireTenantAccess(tenantId: string, userId: string) {
+  const membership = await db
+    .select()
+    .from(memberships)
+    .where(
+      and(
+        eq(memberships.tenantId, tenantId),
+        eq(memberships.userId, userId),
+        eq(memberships.status, "ACTIVE")
+      )
+    )
+    .limit(1);
+
+  if (!membership.length) {
+    throw new Error("Access denied");
+  }
+  return membership[0];
+}
+```
+
+### Profile Management
+
+- Utiliser `ensureProfileExists` pour la création automatique
+- Toujours créer un tenant par défaut pour les nouveaux utilisateurs
+- Gérer `currentTenantId` pour le contexte utilisateur
+
+## Migration Best Practices
+
+### Drizzle Migrations
+
+- Utiliser `drizzle-kit generate` pour les migrations
+- Toujours tester les migrations sur un environnement de staging
+- Documenter les changements de schéma breaking
+
+```bash
+# ✅ Workflow recommandé
+pnpm db:generate  # Génère la migration
+pnpm db:migrate   # Applique en dev
+pnpm db:push      # Push direct en dev seulement
+```
+
+## Performance & Security
+
+### Query Optimization
+
+- Utiliser des index appropriés pour les requêtes tenant-scoped
+- Implémenter la pagination avec `limit()` et `offset()`
+- Éviter les N+1 queries avec les relations Drizzle
+
+### Security Rules
+
+- Jamais exposer les IDs internes dans les URLs
+- Utiliser des tokens sécurisés pour les invitations
+- Valider les permissions tenant à chaque action

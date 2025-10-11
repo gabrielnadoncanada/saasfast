@@ -1,0 +1,43 @@
+---
+title: Next.js App Router Best Practices
+description: Règles pour Next.js App Router, Server Actions et Server Components
+tags: [nextjs, app-router, server-actions, performance]
+priority: high
+---
+
+# Next.js App Router Best Practices
+
+## Server Actions
+
+- Utiliser Server Actions avec `"use server"` pour la logique métier
+- Toujours valider côté serveur avec `safeParseForm`
+- Utiliser `redirect()` pour les redirections post-action
+- Implémenter la gestion d'erreurs robuste
+
+## Client/Server Boundaries
+
+- Appliquer `"use client"` uniquement sur les containers qui nécessitent l'hydratation
+- Préférer Server Components quand possible pour les vues
+- Minimiser les `"use client"` boundaries
+
+## Performance Optimization
+
+- Utiliser `memo()` pour les composants coûteux
+- Préférer Server Components pour le rendu initial
+- Implémenter le streaming et Suspense quand approprié
+
+## Import Organization
+
+```typescript
+// 1. React imports
+import { useActionState } from "react";
+
+// 2. Third-party imports
+import { useForm } from "react-hook-form";
+
+// 3. Internal imports (features)
+import { myAction } from "./actions/my.action";
+
+// 4. Shared imports
+import { useToastError } from "@/shared/hooks/useToastError";
+```

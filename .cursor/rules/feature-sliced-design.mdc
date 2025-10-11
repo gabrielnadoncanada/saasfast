@@ -1,0 +1,36 @@
+---
+title: Feature-Sliced Design (FSD)
+description: Architecture et organisation des features selon FSD
+tags: [architecture, fsd, organization]
+priority: high
+---
+
+# Feature-Sliced Design (FSD)
+
+## Structure Obligatoire
+
+- Toujours respecter la structure FSD : `features/{domain}/{slice}/{segment}/`
+- Segments obligatoires : `actions/`, `hooks/`, `ui/`, `schema/` (dans shared)
+- Séparer container/presentational components dans `ui/`
+- Utiliser `shared/` pour les éléments réutilisables entre features
+
+## Naming Conventions
+
+- Actions : `{action}.action.ts`
+- Hooks : `use{Feature}Form.ts`
+- Components : `{Feature}Form.tsx` + `{Feature}FormView.tsx`
+- Schemas : `{domain}.schema.ts`
+
+## Separation of Concerns
+
+```typescript
+// ✅ Container Component
+export function MyForm() {
+  return <MyFormView {...useMyForm()} />;
+}
+
+// ✅ Presentational Component
+export function MyFormView({ form, onSubmit, isLoading }) {
+  return <form onSubmit={form.handleSubmit(onSubmit)}>...</form>;
+}
+```

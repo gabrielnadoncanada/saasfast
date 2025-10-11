@@ -1,0 +1,69 @@
+---
+title: React 19 Optimizations & useActionState
+description: Règles obligatoires pour l'utilisation de useActionState et les optimisations React 19
+tags: [react, forms, performance, react-19]
+priority: high
+---
+
+# React 19 Optimizations
+
+## useActionState Pattern (OBLIGATOIRE)
+
+Toujours utiliser `useActionState` au lieu de la gestion manuelle d'état pour les formulaires :
+
+```typescript
+// ✅ CORRECT : Utiliser useActionState
+import { useActionState, useEffect } from 'react';
+
+export function useMyForm() {
+  const [actionState, formAction, isPending] = useActionState(
+    myAction,
+    { success: false as const }
+  );
+
+  const form = useForm({...});
+
+  useEffect(() => {
+    if (actionState && !actionState.success) {
+      // Gestion des erreurs
+    }
+  }, [actionState]);
+
+  const onSubmit = (data) => {
+    const formData = new FormData();
+    Object.entries(data).forEach(([key, value]) => {
+      formData.append(key, value);
+    });
+    formAction(formData);
+  };
+
+  return { form, onSubmit, isLoading: isPending, actionState };
+}
+```
+
+```typescript
+// ❌ ÉVITER : Gestion manuelle d'état
+const [isLoading, setIsLoading] = useState(false);
+const onSubmit = async (data) => {
+  setIsLoading(true);
+  const res = await myAction(formData);
+  setIsLoading(false);
+  // ...
+};
+```
+
+## Concurrent Features
+
+- Utiliser `startTransition` pour les actions non-critiques
+- Préférer `useActionState` qui inclut les transitions automatiquement
+- Utiliser `useDeferredValue` pour les recherches/filtres
+
+## Migration Guidelines
+
+Lors de la refactorisation de code existant :
+
+1. **Identifier** les patterns `useState` + actions manuelles
+2. **Remplacer** par `useActionState`
+3. **Simplifier** la logique de gestion d'état
+4. **Tester** les transitions et performances
+5. **Documenter** les changements

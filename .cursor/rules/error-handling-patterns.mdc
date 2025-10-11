@@ -1,0 +1,210 @@
+---
+title: Error Handling & UX Patterns
+description: Gestion cohérente des erreurs et patterns UX pour les formulaires et actions
+tags: [error-handling, ux, forms, toast, validation]
+priority: medium
+---
+
+# Error Handling & UX Patterns
+
+## Server Action Error Handling
+
+### FormResult Pattern
+
+```typescript
+// ✅ CORRECT : Type de retour uniforme
+export type FormResult<T> =
+  | { success: true; data: T }
+  | {
+      success: false;
+      error: string;
+      fieldErrors?: Partial<Record<keyof T, string[]>>;
+    };
+
+export async function myAction(
+  formData: FormData
+): Promise<FormResult<MySchema>> {
+  const parsed = await safeParseForm(formData, mySchema);
+  if (!parsed.success) return parsed;
+
+  try {
+    const result = await performOperation(parsed.data);
+    return { success: true, data: result };
+  } catch (error) {
+    return {
+      success: false,
+      error: "Une erreur est survenue",
+    };
+  }
+}
+```
+
+## Client-Side Error Synchronization
+
+### Field Error Injection
+
+```typescript
+// ✅ CORRECT : Synchroniser erreurs serveur avec react-hook-form
+import { injectFieldErrors } from "@/shared/lib/injectFieldErrors";
+
+useEffect(() => {
+  if (actionState && !actionState.success) {
+    setServerError(actionState.error);
+    injectFieldErrors(form, actionState.fieldErrors);
+  }
+}, [actionState]);
+```
+
+### Toast Error Management
+
+```typescript
+// ✅ CORRECT : Pattern toast uniforme
+import { useToastError } from "@/shared/hooks/useToastError";
+
+export function useMyForm() {
+  const { setServerError, clearServerError } = useToastError();
+
+  const onSubmit = async (data) => {
+    clearServerError(); // Nettoyer avant nouvelle tentative
+
+    const result = await myAction(formData);
+    if (!result.success) {
+      setServerError(result.error); // Toast automatique
+    }
+  };
+}
+```
+
+## Validation Error Patterns
+
+### Zod Error Transformation
+
+```typescript
+// ✅ CORRECT : Transformer les erreurs Zod
+export function extractFieldErrors<T>(
+  error: ZodError
+): Partial<Record<keyof T, string[]>> {
+  const fieldErrors: any = {};
+
+  error.errors.forEach((err) => {
+    const path = err.path.join(".");
+    if (!fieldErrors[path]) {
+      fieldErrors[path] = [];
+    }
+    fieldErrors[path].push(err.message);
+  });
+
+  return fieldErrors;
+}
+```
+
+## Loading States & UX
+
+### Optimistic Updates
+
+```typescript
+// ✅ CORRECT : États de chargement cohérents
+export function useOptimisticAction<T>(
+  action: (data: FormData) => Promise<FormResult<T>>
+) {
+  const [isPending, startTransition] = useTransition();
+
+  const execute = (data: FormData) => {
+    startTransition(async () => {
+      const result = await action(data);
+      // Gestion du résultat
+    });
+  };
+
+  return { execute, isPending };
+}
+```
+
+### Button States
+
+```typescript
+// ✅ CORRECT : États de bouton cohérents
+<Button type="submit" disabled={isLoading}>
+  {isLoading ? "Traitement..." : "Valider"}
+</Button>
+```
+
+## Network Error Handling
+
+### Retry Logic
+
+```typescript
+// ✅ CORRECT : Logique de retry pour les erreurs réseau
+export async function withRetry<T>(
+  fn: () => Promise<T>,
+  maxRetries = 3
+): Promise<T> {
+  let lastError: Error;
+
+  for (let i = 0; i <= maxRetries; i++) {
+    try {
+      return await fn();
+    } catch (error) {
+      lastError = error as Error;
+
+      if (i === maxRetries) break;
+      if (!isRetryableError(error)) break;
+
+      await delay(Math.pow(2, i) * 1000); // Exponential backoff
+    }
+  }
+
+  throw lastError!;
+}
+```
+
+## User Feedback Patterns
+
+### Success Messages
+
+```typescript
+// ✅ CORRECT : Messages de succès cohérents
+export function showSuccessMessage(action: string) {
+  toast({
+    title: "Succès",
+    description: `${action} réalisé avec succès`,
+    variant: "default",
+  });
+}
+```
+
+### Error Boundaries
+
+```typescript
+// ✅ CORRECT : Error Boundary pour les erreurs React
+export function FormErrorBoundary({ children }: { children: React.ReactNode }) {
+  return (
+    <ErrorBoundary
+      fallback={<div>Une erreur est survenue. Veuillez réessayer.</div>}
+      onError={(error) => {
+        console.error("Form error:", error);
+        // Log vers service de monitoring
+      }}
+    >
+      {children}
+    </ErrorBoundary>
+  );
+}
+```
+
+## Accessibility & Error Communication
+
+### Screen Reader Support
+
+```typescript
+// ✅ CORRECT : Support des lecteurs d'écran
+<FormMessage role="alert" aria-live="polite">
+  {error?.message}
+</FormMessage>
+```
+
+### Error Prevention
+
+- Validation en temps réel pour les champs critiques
+- Indicateurs visuels pour les champs requis
+- Messages d'aide contextuelle

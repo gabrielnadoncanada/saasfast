@@ -1,0 +1,156 @@
+---
+title: shadcn/ui Component Patterns
+description: Règles pour l'utilisation cohérente des composants shadcn/ui et Radix
+tags: [ui, shadcn, radix, components, design-system]
+priority: medium
+---
+
+# shadcn/ui Component Patterns
+
+## Component Structure
+
+### Consistent Import Pattern
+
+```typescript
+// ✅ CORRECT : Imports shadcn/ui organisés
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+```
+
+### Form Components
+
+```typescript
+// ✅ CORRECT : Pattern de formulaire avec shadcn/ui
+import {
+  Form,
+  FormControl,
+  FormDescription,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+
+// Toujours utiliser FormField avec render prop
+<FormField
+  control={form.control}
+  name="fieldName"
+  render={({ field }) => (
+    <FormItem>
+      <FormLabel>Label</FormLabel>
+      <FormControl>
+        <Input {...field} />
+      </FormControl>
+      <FormMessage />
+    </FormItem>
+  )}
+/>;
+```
+
+## Layout Components
+
+### Sidebar Pattern
+
+- Utiliser le composant Sidebar pour la navigation principale
+- Implémenter la logique de collapse/expand
+- Respecter les breakpoints responsive
+
+### Card Components
+
+```typescript
+// ✅ CORRECT : Structure Card cohérente
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+
+<Card>
+  <CardHeader>
+    <CardTitle>Titre</CardTitle>
+    <CardDescription>Description optionnelle</CardDescription>
+  </CardHeader>
+  <CardContent>{/* Contenu principal */}</CardContent>
+</Card>;
+```
+
+## Accessibility & UX
+
+### Dialog/Modal Best Practices
+
+- Toujours inclure `DialogTitle` pour l'accessibilité
+- Utiliser `DialogDescription` quand approprié
+- Gérer l'état ouvert/fermé proprement
+
+### Toast Notifications
+
+```typescript
+// ✅ CORRECT : Pattern toast cohérent
+import { useToast } from "@/components/ui/Toasts/use-toast";
+
+const { toast } = useToast();
+
+toast({
+  title: "Succès",
+  description: "Action réalisée avec succès",
+  variant: "default", // ou "destructive"
+});
+```
+
+## Styling Guidelines
+
+### Tailwind Classes Organization
+
+```typescript
+// ✅ CORRECT : Classes organisées par catégorie
+className={cn(
+  // Layout
+  "flex items-center justify-between",
+  // Spacing
+  "p-4 gap-2",
+  // Appearance
+  "bg-background border rounded-lg",
+  // States
+  "hover:bg-accent focus:ring-2",
+  // Responsive
+  "sm:p-6 md:gap-4",
+  className
+)}
+```
+
+### Custom Variants
+
+- Utiliser `class-variance-authority` pour les variants
+- Définir des variants cohérents (size, variant, etc.)
+- Respecter les tokens de design du système
+
+## Icon Usage
+
+### Lucide React Icons
+
+```typescript
+// ✅ CORRECT : Import et usage des icônes
+import { ChevronDown, Settings, User } from "lucide-react";
+
+// Taille cohérente
+<Settings className="h-4 w-4" />
+<User className="h-5 w-5" />
+```
+
+## Component Composition
+
+### Compound Components
+
+- Préférer la composition à la configuration
+- Utiliser les patterns Radix pour les composants complexes
+- Maintenir la flexibilité avec les props forwarding

@@ -1,0 +1,182 @@
+---
+title: Multi-Tenant Architecture Patterns
+description: Règles pour l'architecture multi-tenant avec gestion des rôles et permissions
+tags: [multi-tenant, rbac, permissions, security]
+priority: high
+---
+
+# Multi-Tenant Architecture Patterns
+
+## Tenant Context Management
+
+### Tenant Switching Pattern
+
+```typescript
+// ✅ CORRECT : Gestion du contexte tenant
+export function useTenantContext() {
+  const { user, currentTenant, tenants } = useUser();
+
+  const switchTenant = async (tenantId: string) => {
+    // Vérifier l'accès avant le switch
+    const hasAccess = tenants.some((t) => t.tenant.id === tenantId);
+    if (!hasAccess) throw new Error("Access denied");
+
+    // Mettre à jour le contexte
+    await updateCurrentTenant(tenantId);
+  };
+
+  return { currentTenant, tenants, switchTenant };
+}
+```
+
+### Data Isolation
+
+```typescript
+// ✅ CORRECT : Toujours filtrer par tenant
+export async function getTenantData(tenantId: string, userId: string) {
+  // 1. Vérifier l'accès au tenant
+  await requireTenantAccess(tenantId, userId);
+
+  // 2. Requête avec isolation tenant
+  return await db.select().from(data).where(eq(data.tenantId, tenantId));
+}
+```
+
+## Role-Based Access Control (RBAC)
+
+### Permission Checks
+
+```typescript
+// ✅ CORRECT : Vérification des permissions
+export function requirePermission(
+  membership: Membership,
+  action: "read" | "write" | "admin"
+) {
+  const permissions = {
+    OWNER: ["read", "write", "admin"],
+    ADMIN: ["read", "write"],
+    MEMBER: ["read"],
+  };
+
+  const userPermissions = permissions[membership.role];
+  if (!userPermissions.includes(action)) {
+    throw new Error(`Permission denied: ${action}`);
+  }
+}
+```
+
+### Role Hierarchy
+
+- `OWNER`: Contrôle total du tenant
+- `ADMIN`: Gestion des membres et données
+- `MEMBER`: Accès lecture seule
+
+## Invitation System
+
+### Secure Token Generation
+
+```typescript
+// ✅ CORRECT : Génération de tokens sécurisés
+export async function createInvitation(
+  tenantId: string,
+  email: string,
+  role: Role,
+  inviterId: string
+) {
+  // Vérifier les permissions de l'inviteur
+  await requirePermission(inviterMembership, "admin");
+
+  const token = crypto.randomUUID();
+  const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7 jours
+
+  return await db.insert(invitations).values({
+    tenantId,
+    email,
+    role,
+    token,
+    expiresAt,
+  });
+}
+```
+
+## Audit Logging
+
+### Action Tracking
+
+```typescript
+// ✅ CORRECT : Log des actions importantes
+export async function logAuditAction(
+  tenantId: string,
+  actorId: string,
+  action: string,
+  target: string,
+  meta?: any
+) {
+  await db.insert(auditLogs).values({
+    tenantId,
+    actorId,
+    action,
+    target,
+    meta,
+  });
+}
+
+// Usage dans les actions
+export async function updateTenantSettings(data: UpdateTenantData) {
+  const result = await db.update(tenants).set(data);
+
+  await logAuditAction(
+    data.tenantId,
+    userId,
+    "TENANT_UPDATED",
+    "tenant_settings",
+    { changes: data }
+  );
+
+  return result;
+}
+```
+
+## Billing & Subscriptions
+
+### Plan Limitations
+
+```typescript
+// ✅ CORRECT : Vérification des limites de plan
+export async function checkPlanLimits(
+  tenantId: string,
+  feature: "members" | "storage" | "api_calls"
+) {
+  const tenant = await getTenant(tenantId);
+  const limits = PLAN_LIMITS[tenant.plan];
+
+  const currentUsage = await getCurrentUsage(tenantId, feature);
+
+  if (currentUsage >= limits[feature]) {
+    throw new Error(`Plan limit reached for ${feature}`);
+  }
+}
+```
+
+## Security Best Practices
+
+### Input Validation
+
+- Toujours valider `tenantId` dans les paramètres
+- Vérifier l'appartenance avant toute action
+- Utiliser des UUIDs pour éviter l'énumération
+
+### Error Handling
+
+```typescript
+// ✅ CORRECT : Messages d'erreur sécurisés
+export function handleTenantError(error: unknown) {
+  if (error instanceof TenantAccessError) {
+    return { error: "Access denied" }; // Pas de détails
+  }
+
+  // Log l'erreur complète côté serveur
+  console.error("Tenant operation failed:", error);
+  return { error: "Operation failed" };
+}
+```

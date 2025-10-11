@@ -1,0 +1,38 @@
+---
+title: TypeScript & Validation
+description: Schema-first development avec Zod et type safety
+tags: [typescript, zod, validation, type-safety]
+priority: medium
+---
+
+# TypeScript & Validation
+
+## Schema-First Development
+
+- Toujours définir les schémas Zod en premier
+- Utiliser `z.infer<typeof schema>` pour les types
+- Centraliser les schémas dans `features/{domain}/shared/schema/`
+
+## Type Safety
+
+- Utiliser des types stricts : `{ success: false as const }`
+- Préférer les union types discriminées pour les résultats d'actions
+- Typer tous les props et retours de fonctions
+
+## Error Handling
+
+- Utiliser le pattern `FormResult<T>` pour les actions
+- Implémenter `useToastError` pour l'UX cohérente
+- Séparer erreurs serveur et erreurs de validation
+
+## Server-Side Validation
+
+- Toujours valider les données côté serveur
+- Utiliser `safeParseForm` pour la validation uniforme
+- Implémenter la gestion d'erreurs appropriée
+
+## Client-Side UX
+
+- Synchroniser les erreurs serveur avec react-hook-form
+- Utiliser `injectFieldErrors` pour l'affichage cohérent
+- Implémenter les états de loading appropriés
