@@ -20,11 +20,13 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { CreateTenantDialogTrigger } from "@/features/tenant/create/ui/CreateTenantDialogTrigger";
 
 export function TenantSwitcher({ tenants }: { tenants: TenantWithProfile[] }) {
   const { isMobile } = useSidebar();
   const { currentTenant, switchTenant, isLoadingTenants } = useUser();
   const [isSwitching, setIsSwitching] = React.useState(false);
+  const [dropdownOpen, setDropdownOpen] = React.useState(false);
 
   const handleSwitchTenant = async (tenantId: string) => {
     if (tenantId === currentTenant?.tenant.id || isSwitching) return;
@@ -44,7 +46,7 @@ export function TenantSwitcher({ tenants }: { tenants: TenantWithProfile[] }) {
   return (
     <SidebarMenu>
       <SidebarMenuItem>
-        <DropdownMenu>
+        <DropdownMenu open={dropdownOpen} onOpenChange={setDropdownOpen}>
           <DropdownMenuTrigger asChild>
             <SidebarMenuButton
               size="lg"
@@ -62,8 +64,7 @@ export function TenantSwitcher({ tenants }: { tenants: TenantWithProfile[] }) {
               </Avatar>
               <div className="grid flex-1 text-left text-sm leading-tight">
                 <span className="truncate font-medium">
-                  {currentTenant.tenant.businessName ||
-                    currentTenant.tenant.name}
+                  {currentTenant.tenant.name}
                 </span>
                 <span className="truncate text-xs capitalize">
                   {currentTenant.tenant.plan.toLowerCase()}
@@ -98,7 +99,7 @@ export function TenantSwitcher({ tenants }: { tenants: TenantWithProfile[] }) {
                 </Avatar>
                 <div className="flex-1 min-w-0">
                   <div className="text-sm font-medium truncate">
-                    {tenant.tenant.businessName || tenant.tenant.name}
+                    {tenant.tenant.name}
                   </div>
                   <div className="text-xs text-muted-foreground capitalize">
                     {tenant.membership.role.toLowerCase()}
@@ -110,14 +111,19 @@ export function TenantSwitcher({ tenants }: { tenants: TenantWithProfile[] }) {
               </DropdownMenuItem>
             ))}
             <DropdownMenuSeparator />
-            <DropdownMenuItem className="gap-2 p-2">
-              <div className="flex size-6 items-center justify-center rounded-md border bg-transparent">
-                <Plus className="size-4" />
-              </div>
-              <div className="text-muted-foreground font-medium">
-                Créer un workspace
-              </div>
-            </DropdownMenuItem>
+            <CreateTenantDialogTrigger onSuccess={() => setDropdownOpen(false)}>
+              <DropdownMenuItem
+                className="gap-2 p-2"
+                onSelect={(e) => e.preventDefault()}
+              >
+                <div className="flex size-6 items-center justify-center rounded-md border bg-transparent">
+                  <Plus className="size-4" />
+                </div>
+                <div className="text-muted-foreground font-medium">
+                  Créer un workspace
+                </div>
+              </DropdownMenuItem>
+            </CreateTenantDialogTrigger>
           </DropdownMenuContent>
         </DropdownMenu>
       </SidebarMenuItem>

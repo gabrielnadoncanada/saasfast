@@ -8,6 +8,13 @@
       "when": 1757632275820,
       "tag": "0000_zippy_king_cobra",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1760145503340,
+      "tag": "0001_aspiring_speed",
+      "breakpoints": true
     }
   ]
 }

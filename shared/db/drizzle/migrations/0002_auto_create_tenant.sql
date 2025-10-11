@@ -21,23 +21,18 @@ begin
   from auth.users 
   where id = new.id;
   
-  -- Définir le nom du business (fallback sur le nom utilisateur ou email)
+  -- Définir le nom du workspace (fallback sur le nom utilisateur ou email)
   v_business_name := coalesce(
-    v_user_name || '''s Organization',
-    split_part(v_user_email, '@', 1) || '''s Organization',
-    'My Organization'
+    v_user_name || '''s Workspace',
+    split_part(v_user_email, '@', 1) || '''s Workspace',
+    'My Workspace'
   );
   
-  -- 1) Créer le tenant avec l'utilisateur comme owner et toutes les infos business
+  -- 1) Créer le tenant avec l'utilisateur comme owner
   insert into public.tenants (
     "name", 
     "ownerId", 
-    "plan", 
-    "businessName", 
-    "email",
-    "language",
-    "timezone",
-    "currency",
+    "plan",
     "createdAt",
     "updatedAt"
   )
@@ -45,11 +40,6 @@ begin
     left(v_business_name, 255),
     new.id,
     'FREE',
-    left(v_business_name, 255),
-    coalesce(v_user_email, 'noemail@example.com'),
-    'en',
-    'UTC',
-    'USD',
     now(),
     now()
   )

@@ -1,6 +1,6 @@
 "use client";
 
-import { memo } from "react";
+import React, { memo, useState } from "react";
 import {
   Card,
   CardContent,
@@ -10,14 +10,17 @@ import {
 } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { MoreHorizontal, Calendar } from "lucide-react";
+import { MoreHorizontal, Calendar, Trash2 } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useUser } from "@/features/auth/shared/ui/UserTenantProvider";
+import { useDeleteTenant } from "@/features/tenant/delete/hooks/useDeleteTenant";
+import { DeleteTenantDialog } from "@/features/tenant/delete/ui/DeleteTenantDialog";
 // Helper function to format date
 const formatJoinedDate = (date: Date) => {
   return new Intl.DateTimeFormat("fr-FR", {
@@ -55,7 +58,8 @@ const getRoleLabel = (role: string) => {
   }
 };
 
-const getInitials = (name: string) => {
+const getInitials = (name: string | null | undefined) => {
+  if (!name) return "??";
   return name
     .split(" ")
     .map((n) => n[0])
@@ -66,6 +70,48 @@ const getInitials = (name: string) => {
 
 export const TeamsSection = memo(function TeamsSection() {
   const { tenants, currentTenant, switchTenant, isLoadingTenants } = useUser();
+  const { deleteTenant, isLoading: isDeletingTenant } = useDeleteTenant();
+  const [deleteDialog, setDeleteDialog] = useState<{
+    isOpen: boolean;
+    tenantId: string;
+    tenantName: string;
+  }>({
+    isOpen: false,
+    tenantId: "",
+    tenantName: "",
+  });
+
+  // Calculer le nombre de tenants dont l'utilisateur est propriétaire
+  const ownedTenantsCount = tenants.filter(
+    (t) => t.membership.role === "OWNER"
+  ).length;
+
+  const handleDeleteTenant = async (tenantId: string, tenantName: string) => {
+    setDeleteDialog({
+      isOpen: true,
+      tenantId,
+      tenantName,
+    });
+  };
+
+  const confirmDeleteTenant = async () => {
+    await deleteTenant(deleteDialog.tenantId);
+  };
+
+  const closeDeleteDialog = () => {
+    setDeleteDialog({
+      isOpen: false,
+      tenantId: "",
+      tenantName: "",
+    });
+  };
+
+  const canDeleteTenant = (tenantData: any) => {
+    // Peut supprimer seulement si :
+    // 1. L'utilisateur est propriétaire du tenant
+    // 2. Ce n'est pas le dernier tenant dont il est propriétaire
+    return tenantData.membership.role === "OWNER" && ownedTenantsCount > 1;
+  };
 
   return (
     <Card>
@@ -91,17 +137,17 @@ export const TeamsSection = memo(function TeamsSection() {
                   <Avatar className="h-12 w-12">
                     <AvatarImage
                       src={tenantData.tenant.logoUrl || ""}
-                      alt={tenantData.tenant.businessName}
+                      alt={tenantData.tenant.name}
                     />
                     <AvatarFallback>
-                      {getInitials(tenantData.tenant.businessName)}
+                      {getInitials(tenantData.tenant.name)}
                     </AvatarFallback>
                   </Avatar>
 
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2">
                       <h3 className="font-medium truncate">
-                        {tenantData.tenant.businessName}
+                        {tenantData.tenant.name}
                       </h3>
                       <span
                         className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium border ${getRoleBadgeColor(
@@ -152,6 +198,24 @@ export const TeamsSection = memo(function TeamsSection() {
                       {tenantData.canManageMembers && (
                         <DropdownMenuItem>Gérer les membres</DropdownMenuItem>
                       )}
+                      {canDeleteTenant(tenantData) && (
+                        <>
+                          <DropdownMenuSeparator />
+                          <DropdownMenuItem
+                            className="text-red-600 focus:text-red-600"
+                            onClick={() =>
+                              handleDeleteTenant(
+                                tenantData.tenant.id,
+                                tenantData.tenant.name
+                              )
+                            }
+                            disabled={isDeletingTenant}
+                          >
+                            <Trash2 className="h-4 w-4 mr-2" />
+                            Supprimer le workspace
+                          </DropdownMenuItem>
+                        </>
+                      )}
                     </DropdownMenuContent>
                   </DropdownMenu>
                 </div>
@@ -160,6 +224,14 @@ export const TeamsSection = memo(function TeamsSection() {
           </div>
         )}
       </CardContent>
+
+      <DeleteTenantDialog
+        tenantName={deleteDialog.tenantName}
+        isOpen={deleteDialog.isOpen}
+        onClose={closeDeleteDialog}
+        onConfirm={confirmDeleteTenant}
+        isLoading={isDeletingTenant}
+      />
     </Card>
   );
 });
