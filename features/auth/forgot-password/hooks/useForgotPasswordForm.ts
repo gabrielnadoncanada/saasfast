@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
@@ -6,12 +6,9 @@ import {
   ForgotPasswordSchema,
 } from "@/features/auth/shared/schema/auth.schema";
 import { forgotPasswordAction } from "@/features/auth/forgot-password/actions/forgotPassword.action";
-import { injectFieldErrors } from "@/shared/lib/injectFieldErrors";
-import { useToastError } from "@/shared/hooks/useToastError";
+import { useFormAction } from "@/shared/hooks/useFormAction";
 
 export function useForgotPasswordForm() {
-  const { serverError, setServerError, clearServerError } = useToastError();
-  const [isLoading, setIsLoading] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
 
   const form = useForm<ForgotPasswordSchema>({
@@ -21,25 +18,24 @@ export function useForgotPasswordForm() {
     },
   });
 
-  const onSubmit = async (data: ForgotPasswordSchema) => {
-    clearServerError();
-    setIsLoading(true);
+  const { submitForm, isLoading, actionState } = useFormAction(
+    forgotPasswordAction,
+    form
+  );
 
-    const formData = new FormData();
-    formData.append("email", data.email);
-
-    const res = await forgotPasswordAction(formData);
-    setIsLoading(false);
-
-    if (!res.success) {
-      setServerError(res.error || "Erreur inconnue");
-      injectFieldErrors(form, res.fieldErrors);
-      return false;
+  useEffect(() => {
+    if (actionState?.success) {
+      setIsSuccess(true);
+    } else {
+      setIsSuccess(false);
     }
+  }, [actionState]);
 
-    setIsSuccess(true);
-    return true;
+  return {
+    form,
+    onSubmit: submitForm,
+    isLoading,
+    isSuccess,
+    actionState,
   };
-
-  return { form, onSubmit, isLoading, isSuccess };
 }

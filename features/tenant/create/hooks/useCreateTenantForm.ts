@@ -1,12 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { createTenantAction } from "../actions/createTenant.action";
-import { useToastError } from "@/shared/hooks/useToastError";
-import { injectFieldErrors } from "@/shared/lib/injectFieldErrors";
+import { useFormAction } from "@/shared/hooks/useFormAction";
 import { useUser } from "@/features/auth/shared/ui/UserTenantProvider";
 
 const createTenantSchema = z.object({
@@ -19,8 +18,6 @@ const createTenantSchema = z.object({
 type CreateTenantSchema = z.infer<typeof createTenantSchema>;
 
 export function useCreateTenantForm() {
-  const { serverError, setServerError, clearServerError } = useToastError();
-  const [isLoading, setIsLoading] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
   const { refreshTenants } = useUser();
 
@@ -31,37 +28,26 @@ export function useCreateTenantForm() {
     },
   });
 
-  const onSubmit = async (data: CreateTenantSchema) => {
-    clearServerError();
-    setIsLoading(true);
-    setIsSuccess(false);
+  const { submitForm, isLoading, actionState } = useFormAction(
+    createTenantAction,
+    form
+  );
 
-    const formData = new FormData();
-    formData.append("name", data.name);
-
-    const res = await createTenantAction(formData);
-    setIsLoading(false);
-
-    if (!res.success) {
-      setServerError(res.error || "Erreur inconnue");
-      injectFieldErrors(form, res.fieldErrors);
-      return false;
+  useEffect(() => {
+    if (actionState?.success) {
+      setIsSuccess(true);
+      form.reset();
+      refreshTenants();
+    } else {
+      setIsSuccess(false);
     }
-
-    setIsSuccess(true);
-    form.reset();
-
-    // Refresh the tenants data to update the UI immediately
-    await refreshTenants();
-
-    return true;
-  };
+  }, [actionState, form, refreshTenants]);
 
   return {
     form,
-    onSubmit,
+    onSubmit: submitForm,
     isLoading,
     isSuccess,
-    serverError,
+    actionState,
   };
 }

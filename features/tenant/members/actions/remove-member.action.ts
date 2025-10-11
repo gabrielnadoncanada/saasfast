@@ -3,7 +3,7 @@
 import { db, memberships } from "@/shared/db/drizzle/db";
 import { eq, and, count } from "drizzle-orm";
 import { requireTenantContext } from "@/features/auth/shared/actions/getUserTenantData.action";
-import { isUserOwnerOrAdmin } from "../../../tenant/shared/lib/tenant";
+import { isUserOwnerOrAdmin } from "@/features/tenant/shared/lib/tenant";
 import { z } from "zod";
 import { safeParseForm } from "@/shared/lib/safeParseForm";
 import type { FormResult } from "@/shared/types/api.types";

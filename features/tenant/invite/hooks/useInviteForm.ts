@@ -1,10 +1,9 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { inviteMemberAction } from "@/features/tenant/invite/actions/invite.action";
-import { injectFieldErrors } from "@/shared/lib/injectFieldErrors";
-import { useToastError } from "@/shared/hooks/useToastError";
+import { useFormAction } from "@/shared/hooks/useFormAction";
 
 const inviteSchema = z.object({
   email: z.string().email("Email invalide"),
@@ -14,8 +13,6 @@ const inviteSchema = z.object({
 type InviteSchema = z.infer<typeof inviteSchema>;
 
 export function useInviteForm() {
-  const { serverError, setServerError, clearServerError } = useToastError();
-  const [isLoading, setIsLoading] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
 
   const form = useForm<InviteSchema>({
@@ -26,33 +23,25 @@ export function useInviteForm() {
     },
   });
 
-  const onSubmit = async (data: InviteSchema) => {
-    clearServerError();
-    setIsLoading(true);
-    setIsSuccess(false);
+  const { submitForm, isLoading, actionState } = useFormAction(
+    inviteMemberAction,
+    form
+  );
 
-    const formData = new FormData();
-    formData.append("email", data.email);
-    formData.append("role", data.role);
-
-    const res = await inviteMemberAction(formData);
-    setIsLoading(false);
-
-    if (!res.success) {
-      setServerError(res.error || "Erreur inconnue");
-      injectFieldErrors(form, res.fieldErrors);
-      return false;
+  useEffect(() => {
+    if (actionState?.success) {
+      setIsSuccess(true);
+      form.reset();
+    } else {
+      setIsSuccess(false);
     }
-
-    setIsSuccess(true);
-    form.reset();
-    return true;
-  };
+  }, [actionState, form]);
 
   return {
     form,
-    onSubmit,
+    onSubmit: submitForm,
     isLoading,
     isSuccess,
+    actionState,
   };
 }

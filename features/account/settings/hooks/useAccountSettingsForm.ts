@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
@@ -6,8 +6,7 @@ import {
   AccountSettingsSchema,
 } from "@/features/account/settings/schema/settings.schema";
 import { updateAccountSettingsAction } from "@/features/account/settings/actions/updateAccountSettings.action";
-import { injectFieldErrors } from "@/shared/lib/injectFieldErrors";
-import { useToastError } from "@/shared/hooks/useToastError";
+import { useFormActionWithFiles } from "@/shared/hooks/useFormActionWithFiles";
 import { toast } from "@/components/ui/Toasts/use-toast";
 import type { ProfileRow } from "@/shared/db/drizzle/auth";
 import { useRouter } from "next/navigation";
@@ -19,8 +18,6 @@ interface UseAccountSettingsFormProps {
 export function useAccountSettingsForm({
   initialData,
 }: UseAccountSettingsFormProps = {}) {
-  const { serverError, setServerError, clearServerError } = useToastError();
-  const [isLoading, setIsLoading] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(
     initialData?.avatarUrl || null
@@ -28,6 +25,7 @@ export function useAccountSettingsForm({
   const [fileError, setFileError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const router = useRouter();
+
   const form = useForm<AccountSettingsSchema>({
     resolver: zodResolver(accountSettingsSchema),
     defaultValues: {
@@ -35,10 +33,24 @@ export function useAccountSettingsForm({
     },
   });
 
+  const { submitFormWithFiles, isLoading, actionState } =
+    useFormActionWithFiles(updateAccountSettingsAction, form);
+
+  useEffect(() => {
+    if (actionState?.success) {
+      toast({
+        title: "Paramètres mis à jour",
+        description: "Vos paramètres de compte ont été mis à jour avec succès.",
+      });
+      router.refresh();
+      setSelectedFile(null);
+      setFileError(null);
+    }
+  }, [actionState, router]);
+
   const handleFileSelect = (file: File) => {
     // Clear previous errors
     setFileError(null);
-    clearServerError();
 
     // Validate file type
     if (!file.type.startsWith("image/")) {
@@ -70,54 +82,26 @@ export function useAccountSettingsForm({
     fileInputRef.current?.click();
   };
 
-  const onSubmit = async (data: AccountSettingsSchema) => {
+  const onSubmit = (data: AccountSettingsSchema) => {
     // Prevent submission if there's a file error
     if (fileError) {
-      return false;
+      return;
     }
 
-    clearServerError();
-    setIsLoading(true);
-
-    const formData = new FormData();
-    formData.append("name", data.name);
-    if (selectedFile) {
-      formData.append("avatar", selectedFile);
-    }
-
-    const res = await updateAccountSettingsAction(formData);
-    setIsLoading(false);
-
-    if (!res.success) {
-      setServerError(res.error || "Erreur inconnue");
-      injectFieldErrors(form, res.fieldErrors);
-      return false;
-    }
-
-    // Show success toast
-    toast({
-      title: "Paramètres mis à jour",
-      description: "Vos paramètres de compte ont été mis à jour avec succès.",
-    });
-    router.refresh();
-
-    // Reset file selection after successful upload
-    setSelectedFile(null);
-    setFileError(null);
-
-    return true;
+    const files = selectedFile ? { avatar: selectedFile } : undefined;
+    submitFormWithFiles(data, files);
   };
 
   return {
     form,
     onSubmit,
     isLoading,
-    serverError,
     fileError,
     selectedFile,
     previewUrl,
     fileInputRef,
     handleFileSelect,
     handleAvatarClick,
+    actionState,
   };
 }
