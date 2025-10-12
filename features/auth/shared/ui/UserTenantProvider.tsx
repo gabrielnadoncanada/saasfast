@@ -14,11 +14,11 @@ import {
 } from "react";
 import type { User } from "@supabase/supabase-js";
 import type { Tenant, Profile } from "@/shared/db/drizzle/schema";
-import type { InitialUserTenantData } from "../actions/getUserTenantData.action";
+import type { InitialUserTenantData } from "@/features/auth/shared/actions/getUserTenantData.action";
 import {
   refreshUserTenants,
   switchTenant as switchTenantAction,
-} from "../actions/getUserTenantData.action";
+} from "@/features/auth/shared/actions/getUserTenantData.action";
 
 // Types pour l'utilisateur avec profil
 export type UserWithProfile = {

@@ -13,6 +13,7 @@ vi.mock("next/navigation", () => ({
   }),
   useSearchParams: () => new URLSearchParams(),
   usePathname: () => "/",
+  redirect: vi.fn(), // Don't throw in tests, just mock it
 }));
 
 // Mock Supabase client
@@ -36,15 +37,6 @@ vi.mock("@/shared/db/supabase/client", () => ({
     })),
   }),
 }));
-
-// Mock server actions
-vi.mock("react", async () => {
-  const actual = await vi.importActual("react");
-  return {
-    ...actual,
-    cache: vi.fn((fn) => fn),
-  };
-});
 
 // Global test setup
 beforeEach(() => {

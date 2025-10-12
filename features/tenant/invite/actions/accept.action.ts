@@ -9,7 +9,7 @@ import { DASHBOARD_PATH } from "@/shared/constants/routes";
 
 export async function acceptInvitationAction(token: string) {
   if (!token) {
-    redirect(
+    return redirect(
       getErrorRedirect(
         "/auth",
         "invalid_token",
@@ -32,7 +32,7 @@ export async function acceptInvitationAction(token: string) {
     .limit(1);
 
   if (invitation.length === 0) {
-    redirect(
+    return redirect(
       getErrorRedirect(
         "/auth",
         "invitation_not_found",
@@ -50,7 +50,7 @@ export async function acceptInvitationAction(token: string) {
 
   if (error || !user) {
     // User needs to be authenticated first
-    redirect(
+    return redirect(
       getErrorRedirect(
         "/auth",
         "authentication_required",
@@ -61,7 +61,7 @@ export async function acceptInvitationAction(token: string) {
 
   // Check if user's email matches the invitation
   if (user.email !== invite.email) {
-    redirect(
+    return redirect(
       getErrorRedirect(
         "/auth",
         "email_mismatch",
@@ -112,7 +112,7 @@ export async function acceptInvitationAction(token: string) {
         .where(eq(invitations.id, invite.id));
     });
 
-    redirect(
+    return redirect(
       getStatusRedirect(
         DASHBOARD_PATH,
         "Invitation acceptée !",
@@ -121,7 +121,7 @@ export async function acceptInvitationAction(token: string) {
     );
   } catch (error) {
     console.error("Error accepting invitation:", error);
-    redirect(
+    return redirect(
       getErrorRedirect(
         "/auth",
         "invitation_accept_error",

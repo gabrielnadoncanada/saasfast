@@ -7,7 +7,7 @@ import { redirect } from "next/navigation";
 import type {
   UserWithProfile,
   TenantWithProfile,
-} from "../ui/UserTenantProvider";
+} from "@/features/auth/shared/ui/UserTenantProvider";
 
 // Action principale pour récupérer les données initiales côté serveur
 export async function getInitialUserTenantData() {
@@ -114,7 +114,7 @@ export async function requireTenantContext() {
   } = await supabase.auth.getUser();
 
   if (error || !user) {
-    redirect("/auth");
+    return redirect("/auth");
   }
 
   // Récupérer le profil utilisateur
@@ -126,14 +126,13 @@ export async function requireTenantContext() {
 
   const profile = userProfile[0];
   if (!profile) {
-    redirect("/auth/setup-profile"); // À créer
+    return redirect("/auth/setup-profile"); // À créer
   }
 
   // Récupérer tous les tenants de l'utilisateur
   const userTenants = await getUserTenants(user.id);
-  console.log("userTenants", userTenants);
   if (userTenants.length === 0) {
-    redirect("/auth/setup-tenant"); // À créer
+    return redirect("/auth/setup-tenant"); // À créer
   }
 
   // Déterminer le tenant courant

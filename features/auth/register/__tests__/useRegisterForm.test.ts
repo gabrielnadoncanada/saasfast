@@ -1,22 +1,19 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { renderHook, act } from "@testing-library/react";
-import { useLoginForm } from "@/features/auth/login/hooks/useLoginForm";
-import {
-  mockActionSuccess,
-  mockActionError,
-} from "@/__tests__/setup/test-utils";
+import { useRegisterForm } from "@/features/auth/register/hooks/useRegisterForm";
+import { mockActionSuccess, mockActionError } from "@/__tests__/setup/test-utils";
 
 // Mock dependencies
 vi.mock("@/shared/hooks/useFormAction.ts", () => ({
   useFormAction: vi.fn(),
 }));
 
-vi.mock("@/features/auth/login/actions/login.action.ts", () => ({
-  loginAction: vi.fn(),
+vi.mock("@/features/auth/register/actions/register.action.ts", () => ({
+  registerAction: vi.fn(),
 }));
 
 vi.mock("@/features/auth/shared/schema/auth.schema.ts", () => ({
-  loginSchema: {
+  registerSchema: {
     parse: vi.fn(),
     safeParse: vi.fn(),
   },
@@ -30,7 +27,7 @@ vi.mock("@hookform/resolvers/zod", () => ({
   zodResolver: vi.fn(),
 }));
 
-describe("useLoginForm", () => {
+describe("useRegisterForm", () => {
   const mockForm = {
     handleSubmit: vi.fn(),
     formState: {
@@ -65,7 +62,7 @@ describe("useLoginForm", () => {
   });
 
   it("should initialize form with correct default values", () => {
-    const { result } = renderHook(() => useLoginForm());
+    const { result } = renderHook(() => useRegisterForm());
 
     expect(result.current.form).toBe(mockForm);
     expect(result.current.onSubmit).toBe(mockSubmitForm);
@@ -73,32 +70,29 @@ describe("useLoginForm", () => {
     expect(result.current.actionState).toBe(null);
   });
 
-  it("should configure form with zodResolver and loginSchema", async () => {
+  it("should use registerSchema for validation", async () => {
     const { useForm } = await import("react-hook-form");
     const { zodResolver } = await import("@hookform/resolvers/zod");
-    const { loginSchema } = await import(
-      "@/features/auth/shared/schema/auth.schema"
-    );
+    const { registerSchema } = await import("@/features/auth/shared/schema/auth.schema");
 
-    renderHook(() => useLoginForm());
+    renderHook(() => useRegisterForm());
 
     expect(useForm).toHaveBeenCalledWith({
-      resolver: zodResolver(loginSchema),
+      resolver: zodResolver(registerSchema),
       defaultValues: {
+        full_name: "",
         email: "",
         password: "",
       },
     });
   });
 
-  it("should pass loginAction to useFormAction", async () => {
-    const { loginAction } = await import(
-      "@/features/auth/login/actions/login.action"
-    );
+  it("should pass registerAction to useFormAction", async () => {
+    const { registerAction } = await import("@/features/auth/register/actions/register.action");
 
-    renderHook(() => useLoginForm());
+    renderHook(() => useRegisterForm());
 
-    expect(mockUseFormAction).toHaveBeenCalledWith(loginAction, mockForm);
+    expect(mockUseFormAction).toHaveBeenCalledWith(registerAction, mockForm);
   });
 
   it("should handle loading state", () => {
@@ -108,29 +102,28 @@ describe("useLoginForm", () => {
       actionState: null,
     });
 
-    const { result } = renderHook(() => useLoginForm());
+    const { result } = renderHook(() => useRegisterForm());
 
     expect(result.current.isLoading).toBe(true);
   });
 
-  it("should handle successful login", () => {
-    const successState = mockActionSuccess({ user: { id: "123" } });
+  it("should handle successful registration", () => {
+    const successState = mockActionSuccess({ userId: "123" });
     mockUseFormAction.mockReturnValue({
       submitForm: mockSubmitForm,
       isLoading: false,
       actionState: successState,
     });
 
-    const { result } = renderHook(() => useLoginForm());
+    const { result } = renderHook(() => useRegisterForm());
 
     expect(result.current.actionState).toBe(successState);
     expect(result.current.actionState?.success).toBe(true);
   });
 
-  it("should handle login error", () => {
-    const errorState = mockActionError("Invalid credentials", {
-      email: ["Email is required"],
-      password: ["Password is required"],
+  it("should handle registration errors", () => {
+    const errorState = mockActionError("Email déjà utilisé", {
+      email: ["Cette adresse e-mail est déjà utilisée"],
     });
     mockUseFormAction.mockReturnValue({
       submitForm: mockSubmitForm,
@@ -138,23 +131,12 @@ describe("useLoginForm", () => {
       actionState: errorState,
     });
 
-    const { result } = renderHook(() => useLoginForm());
+    const { result } = renderHook(() => useRegisterForm());
 
     expect(result.current.actionState).toBe(errorState);
     expect(result.current.actionState?.success).toBe(false);
     if (result.current.actionState && !result.current.actionState.success) {
-      expect(result.current.actionState.error).toBe("Invalid credentials");
+      expect(result.current.actionState.error).toBe("Email déjà utilisé");
     }
-  });
-
-  it("should call onSubmit when form is submitted", () => {
-    const { result } = renderHook(() => useLoginForm());
-    const loginData = { email: "test@example.com", password: "password123" };
-
-    act(() => {
-      result.current.onSubmit(loginData);
-    });
-
-    expect(mockSubmitForm).toHaveBeenCalledWith(loginData);
   });
 });

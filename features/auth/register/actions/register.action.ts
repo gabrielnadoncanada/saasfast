@@ -51,10 +51,10 @@ export async function registerAction(
   // Le profil sera créé lors de la confirmation email
   // Voir: /auth/api/confirm/route.ts
 
-  redirect(
+  return redirect(
     getStatusRedirect(
       AUTH_PATH,
-      "Votre compte a été créé !",
+      "Votre compte a été créé !",
       "Vérifiez votre e-mail pour confirmer votre inscription. Connectez-vous dès que vous avez validé votre adresse."
     )
   );
