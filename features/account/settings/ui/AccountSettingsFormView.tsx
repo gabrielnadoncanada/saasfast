@@ -22,6 +22,7 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Camera } from "lucide-react";
 import { TeamsSection } from "./TeamsSection";
+import { SignInSection } from "./SignInSection";
 
 interface AccountSettingsFormViewProps {
   form: UseFormReturn<AccountSettingsSchema>;
@@ -157,6 +158,8 @@ export const AccountSettingsFormView = memo(function AccountSettingsFormView({
           </Form>
         </CardContent>
       </Card>
+
+      <SignInSection />
 
       <TeamsSection />
     </div>
